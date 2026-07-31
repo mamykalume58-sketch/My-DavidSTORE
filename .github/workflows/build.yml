@@ -10,35 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Installer Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
 
-      - name: Installer Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Augmenter automatiquement la version
+      - name: Configure keystore
         run: |
-          BUILD_NUMBER=${{ github.run_number }}
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/davidstore-release.jks
 
-          sed -i "s/^version: .*/version: 1.0.${BUILD_NUMBER}+${BUILD_NUMBER}/" pubspec.yaml
+          cat <<EOF > android/key.properties
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=davidstore-release.jks
+          EOF
 
-          cat pubspec.yaml | grep version
-
-      - name: Installer les dépendances
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Générer l'APK
+      - name: Build APK
         run: flutter build apk --release
 
-      - name: Envoyer l'APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: davidstore-apk
