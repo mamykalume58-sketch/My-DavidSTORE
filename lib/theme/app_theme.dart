@@ -5,6 +5,7 @@ class AppColors {
   static const Color navyMid = Color(0xFF141B45);
   static const Color orange = Color(0xFFFF6B35);
   static const Color orangeDark = Color(0xFFE8491D);
+  static const Color gold = Color(0xFFE8A93A);
   static const Color white = Color(0xFFFFFFFF);
   static const Color whiteMuted = Color(0xB3FFFFFF);
   static const Color textDark = Color(0xFF222222);
