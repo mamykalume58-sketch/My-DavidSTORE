@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'onboarding3_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,9 +19,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const Onboarding3Screen()),
+      );
     }
-    // La logique du 3ᵉ écran (Commencer / Se connecter) sera ajoutée
-    // une fois cet écran construit.
   }
 
   @override
@@ -58,8 +61,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 8,
                       decoration: BoxDecoration(
                         color: active
-                            ? (_currentPage == 0 ? AppColors.white : AppColors.orangeDark)
-                            : (_currentPage == 0 ? AppColors.whiteMuted : AppColors.textGrey),
+                            ? (_currentPage == 0
+                                ? AppColors.white
+                                : AppColors.orangeDark)
+                            : (_currentPage == 0
+                                ? AppColors.whiteMuted
+                                : AppColors.textGrey),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     );
@@ -69,10 +76,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ElevatedButton(
                   onPressed: _goNext,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _currentPage == 0 ? AppColors.white : AppColors.orangeDark,
-                    foregroundColor:
-                        _currentPage == 0 ? AppColors.orangeDark : AppColors.white,
+                    backgroundColor: _currentPage == 0
+                        ? AppColors.white
+                        : AppColors.orangeDark,
+                    foregroundColor: _currentPage == 0
+                        ? AppColors.orangeDark
+                        : AppColors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 12,
