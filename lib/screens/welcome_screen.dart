@@ -85,20 +85,14 @@ class WelcomeScreen extends StatelessWidget {
                         color: Colors.blue)),
                 onTap: () {},
               ),
-              _authButton(
-                text: 'Continuer avec Facebook',
-                backgroundColor: const Color(0xFF1877F2),
-                textColor: Colors.white,
-                leading: const Icon(Icons.facebook, color: Colors.white),
-                onTap: () {},
-              ),
               Row(
                 children: const [
                   Expanded(child: Divider(color: Colors.white24)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: Text('OU',
-                        style: TextStyle(color: Colors.white38, fontSize: 12)),
+                        style: TextStyle(
+                            color: Colors.white38, fontSize: 12)),
                   ),
                   Expanded(child: Divider(color: Colors.white24)),
                 ],
