@@ -24,6 +24,10 @@ jobs:
         with:
           channel: stable
 
+      - name: Create firebase_options.dart
+        run: |
+          echo "${{ secrets.FIREBASE_OPTIONS }}" | base64 --decode > lib/firebase_options.dart
+
       - name: Get dependencies
         run: flutter pub get
 
