@@ -16,29 +16,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.navyDark,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
               const SizedBox(height: 24),
-              Image.asset('assets/images/logo.png', width: 130),
-              const SizedBox(height: 12),
-              const Text(
-                'Le shopping intelligent commence ici.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.white, fontSize: 15),
-              ),
-              const SizedBox(height: 12),
-              Container(width: 40, height: 2, color: AppColors.orangeDark),
-              const SizedBox(height: 28),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Créer un compte',
                   style: TextStyle(
-                    color: AppColors.white,
+                    color: AppColors.textDark,
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
                   ),
@@ -49,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Rejoignez DavidSTORE et profitez d\'une\nexpérience d\'achat unique.',
-                  style: TextStyle(color: AppColors.whiteMuted, fontSize: 14),
+                  style: TextStyle(color: AppColors.textGrey, fontSize: 14),
                 ),
               ),
               const SizedBox(height: 24),
@@ -81,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onChanged: (value) =>
                         setState(() => _acceptTerms = value ?? false),
                     activeColor: AppColors.orangeDark,
-                    side: const BorderSide(color: AppColors.whiteMuted),
+                    side: const BorderSide(color: AppColors.textGrey),
                   ),
                   Expanded(
                     child: Padding(
@@ -89,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text.rich(
                         TextSpan(
                           style: const TextStyle(
-                              color: AppColors.white, fontSize: 13),
+                              color: AppColors.textDark, fontSize: 13),
                           children: [
                             const TextSpan(text: 'J\'accepte les '),
                             TextSpan(
@@ -140,13 +130,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
               Row(
                 children: const [
-                  Expanded(child: Divider(color: AppColors.whiteMuted)),
+                  Expanded(child: Divider(color: AppColors.textGrey)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: Text('OU S\'INSCRIRE AVEC',
-                        style: TextStyle(color: AppColors.whiteMuted, fontSize: 12)),
+                        style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
                   ),
-                  Expanded(child: Divider(color: AppColors.whiteMuted)),
+                  Expanded(child: Divider(color: AppColors.textGrey)),
                 ],
               ),
               const SizedBox(height: 16),
@@ -170,7 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _buildSocialButton(
-                      child: const Icon(Icons.apple, color: AppColors.white, size: 22),
+                      child: const Icon(Icons.apple, color: AppColors.textDark, size: 22),
                       label: 'Apple',
                     ),
                   ),
@@ -181,7 +171,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Vous avez déjà un compte ? ',
-                      style: TextStyle(color: AppColors.whiteMuted, fontSize: 14)),
+                      style: TextStyle(color: AppColors.textGrey, fontSize: 14)),
                   GestureDetector(
                     onTap: () {},
                     child: const Text(
@@ -210,26 +200,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.whiteMuted),
+        border: Border.all(color: AppColors.textGrey),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
         obscureText: obscure,
-        style: const TextStyle(color: AppColors.white),
+        style: const TextStyle(color: AppColors.textDark),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: AppColors.whiteMuted, size: 20),
+          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 20),
           suffixIcon: toggleObscure != null
               ? IconButton(
                   icon: Icon(
                     obscure ? Icons.visibility_off : Icons.visibility,
-                    color: AppColors.whiteMuted,
+                    color: AppColors.textGrey,
                     size: 20,
                   ),
                   onPressed: toggleObscure,
                 )
               : null,
           hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.whiteMuted),
+          hintStyle: const TextStyle(color: AppColors.textGrey),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -241,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildSocialButton({required Widget child, required String label}) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.whiteMuted),
+        border: Border.all(color: AppColors.textGrey),
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -250,7 +240,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         children: [
           child,
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: AppColors.white, fontSize: 12)),
+          Text(label, style: const TextStyle(color: AppColors.textDark, fontSize: 12)),
         ],
       ),
     );
