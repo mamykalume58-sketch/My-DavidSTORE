@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,6 +13,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
+
+  void _goToHome() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    );
+  }
+
+  void _handleSocialLogin(String provider) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Continuer avec $provider',
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _goToHome();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.orangeDark,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text('Se connecter',
+                        style: TextStyle(color: AppColors.white)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _goToHome();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.orangeDark),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text('Créer un compte',
+                        style: TextStyle(color: AppColors.orangeDark)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _goToHome,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.orangeDark,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -147,6 +221,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Image.asset('assets/images/google_logo.png',
                           width: 20, height: 20),
                       label: 'Google',
+                      onTap: () => _handleSocialLogin('Google'),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -155,6 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: const Icon(Icons.facebook,
                           color: Color(0xFF1877F2), size: 22),
                       label: 'Facebook',
+                      onTap: () => _handleSocialLogin('Facebook'),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -162,6 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: _buildSocialButton(
                       child: const Icon(Icons.apple, color: AppColors.textDark, size: 22),
                       label: 'Apple',
+                      onTap: () => _handleSocialLogin('Apple'),
                     ),
                   ),
                 ],
@@ -228,20 +305,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildSocialButton({required Widget child, required String label}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textGrey),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          child,
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: AppColors.textDark, fontSize: 12)),
-        ],
+  Widget _buildSocialButton({
+    required Widget child,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.textGrey),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            child,
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(color: AppColors.textDark, fontSize: 12)),
+          ],
+        ),
       ),
     );
   }
