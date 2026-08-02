@@ -20,7 +20,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _ensureGoogleInitialized() async {
     if (_googleInitialized) return;
-    await GoogleSignIn.instance.initialize();
+    await GoogleSignIn.instance.initialize(
+      serverClientId:
+          '27947559228-36j1vtt3pinki041dtpfar6oiptlfhlm.apps.googleusercontent.com',
+    );
     _googleInitialized = true;
   }
 
