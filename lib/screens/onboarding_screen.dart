@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
+import 'register_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -32,12 +33,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void _goToRegister() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Connexion bientôt disponible'),
-        backgroundColor: AppColors.orangeDark,
-      ),
+  Future<void> _goToRegister() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_onboarding', true);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
     );
   }
 
