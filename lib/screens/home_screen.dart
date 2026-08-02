@@ -1,31 +1,78 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'category_screen.dart';
+import 'favorites_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const _AccueilPage(),
+    const CategoryScreen(categoryName: 'Toutes'),
+    const FavoritesScreen(),
+    const _PanierPage(),
+    const _ComptePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            _buildHeader(),
-            _buildSearchBar(),
-            _buildBanner(),
-            _buildQuickInfoRow(),
-            _buildSectionTitle('Catégories', showAll: true),
-            _buildCategories(context),
-            _buildSectionTitle('Réductions du jour', showAll: true),
-            _buildDiscounts(),
-            const SizedBox(height: 20),
-          ],
-        ),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: AppColors.orangeDark,
+        unselectedItemColor: AppColors.textGrey,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppColors.white,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+        },
+        items: const [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined), label: 'Accueil'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.grid_view_outlined), label: 'Catégories'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_border), label: 'Favoris'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart_outlined), label: 'Panier'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline), label: 'Compte'),
+        ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+}
+
+// ── PAGE ACCUEIL ──────────────────────────────────────────
+class _AccueilPage extends StatelessWidget {
+  const _AccueilPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _buildHeader(),
+          _buildSearchBar(),
+          _buildBanner(),
+          _buildQuickInfoRow(),
+          _buildSectionTitle('Catégories', showAll: true),
+          _buildCategories(context),
+          _buildSectionTitle('Réductions du jour', showAll: true),
+          _buildDiscounts(),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 
@@ -89,48 +136,32 @@ class HomeScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(20),
       height: 160,
-      width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.navyDark,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Le shopping',
-                  style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700),
-                ),
-                const Text(
-                  'intelligent',
-                  style: TextStyle(
-                      color: AppColors.orangeDark,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800),
-                ),
-                const Text(
-                  'commence ici.',
-                  style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Découvrez DavidSTORE...',
-                  style: TextStyle(color: AppColors.whiteMuted, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text('Le shopping',
+              style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700)),
+          Text('intelligent',
+              style: TextStyle(
+                  color: AppColors.orangeDark,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800)),
+          Text('commence ici.',
+              style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700)),
+          SizedBox(height: 8),
+          Text('Découvrez DavidSTORE...',
+              style: TextStyle(color: AppColors.whiteMuted, fontSize: 12)),
         ],
       ),
     );
@@ -154,11 +185,10 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 6),
               SizedBox(
                 width: 65,
-                child: Text(
-                  item.$2,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 10, color: AppColors.textGrey),
-                ),
+                child: Text(item.$2,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 10, color: AppColors.textGrey)),
               ),
             ],
           );
@@ -172,11 +202,11 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-                fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textDark),
-          ),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark)),
           const Spacer(),
           if (showAll)
             const Text('Voir tout',
@@ -223,7 +253,9 @@ class HomeScreen extends StatelessWidget {
                     child: Icon(cat.$1, color: AppColors.orangeDark),
                   ),
                   const SizedBox(height: 6),
-                  Text(cat.$2, style: const TextStyle(fontSize: 11, color: AppColors.textDark)),
+                  Text(cat.$2,
+                      style: const TextStyle(
+                          fontSize: 11, color: AppColors.textDark)),
                 ],
               ),
             ),
@@ -266,15 +298,17 @@ class HomeScreen extends StatelessWidget {
                           topRight: Radius.circular(12),
                         ),
                       ),
-                      child: const Icon(Icons.image_outlined,
-                          color: AppColors.textGrey, size: 32),
+                      child: const Center(
+                        child: Icon(Icons.image_outlined,
+                            color: AppColors.textGrey, size: 32),
+                      ),
                     ),
                     Positioned(
                       top: 6,
                       left: 6,
                       child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(4),
@@ -294,7 +328,8 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.$1,
-                          style: const TextStyle(fontSize: 11, color: AppColors.textDark),
+                          style: const TextStyle(
+                              fontSize: 11, color: AppColors.textDark),
                           maxLines: 2),
                       const SizedBox(height: 4),
                       Text(item.$2,
@@ -317,20 +352,34 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      selectedItemColor: AppColors.orangeDark,
-      unselectedItemColor: AppColors.textGrey,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Accueil'),
-        BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), label: 'Catégories'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Favoris'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Panier'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Compte'),
-      ],
+// ── PAGE PANIER ───────────────────────────────────────────
+class _PanierPage extends StatelessWidget {
+  const _PanierPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SafeArea(
+      child: Center(
+        child: Text('Panier - Bientôt disponible',
+            style: TextStyle(color: AppColors.textGrey)),
+      ),
+    );
+  }
+}
+
+// ── PAGE COMPTE ───────────────────────────────────────────
+class _ComptePage extends StatelessWidget {
+  const _ComptePage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SafeArea(
+      child: Center(
+        child: Text('Compte - Bientôt disponible',
+            style: TextStyle(color: AppColors.textGrey)),
+      ),
     );
   }
 }

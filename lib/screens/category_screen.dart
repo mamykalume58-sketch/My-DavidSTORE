@@ -20,7 +20,7 @@ class CategoryScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDark),
+        automaticallyImplyLeading: false,
         title: Text(categoryName,
             style: const TextStyle(
                 color: AppColors.textDark,
@@ -34,7 +34,8 @@ class CategoryScreen extends StatelessWidget {
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.textDark),
+                icon: const Icon(Icons.shopping_cart_outlined,
+                    color: AppColors.textDark),
                 onPressed: () {},
               ),
               Positioned(
@@ -47,7 +48,8 @@ class CategoryScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: const Text('0',
-                      style: TextStyle(color: AppColors.white, fontSize: 9)),
+                      style: TextStyle(
+                          color: AppColors.white, fontSize: 9)),
                 ),
               ),
             ],
@@ -61,19 +63,23 @@ class CategoryScreen extends StatelessWidget {
             child: Row(
               children: [
                 Text('${products.length} articles',
-                    style: const TextStyle(color: AppColors.textGrey, fontSize: 13)),
+                    style: const TextStyle(
+                        color: AppColors.textGrey, fontSize: 13)),
                 const Spacer(),
                 OutlinedButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.filter_list, color: AppColors.orangeDark, size: 18),
+                  icon: const Icon(Icons.filter_list,
+                      color: AppColors.orangeDark, size: 18),
                   label: const Text('Filtrer',
-                      style: TextStyle(color: AppColors.orangeDark, fontSize: 13)),
+                      style: TextStyle(
+                          color: AppColors.orangeDark, fontSize: 13)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.orangeDark),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
                   ),
                 ),
               ],
@@ -83,7 +89,8 @@ class CategoryScreen extends StatelessWidget {
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: products.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF0F0F0)),
+              separatorBuilder: (_, __) =>
+                  const Divider(height: 1, color: Color(0xFFF0F0F0)),
               itemBuilder: (context, index) {
                 final item = products[index];
                 return Padding(
@@ -97,7 +104,8 @@ class CategoryScreen extends StatelessWidget {
                           color: const Color(0xFFF7F7F7),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.image_outlined, color: AppColors.textGrey),
+                        child: const Icon(Icons.image_outlined,
+                            color: AppColors.textGrey),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -120,7 +128,8 @@ class CategoryScreen extends StatelessWidget {
                       ),
                       if (item.$4.isNotEmpty)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: Colors.red,
                             borderRadius: BorderRadius.circular(4),
@@ -132,26 +141,14 @@ class CategoryScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w700)),
                         ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.favorite_border, color: AppColors.textGrey, size: 20),
+                      const Icon(Icons.favorite_border,
+                          color: AppColors.textGrey, size: 20),
                     ],
                   ),
                 );
               },
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        selectedItemColor: AppColors.orangeDark,
-        unselectedItemColor: AppColors.textGrey,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Accueil'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_outlined), label: 'Catégories'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Favoris'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined), label: 'Panier'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Compte'),
         ],
       ),
     );
