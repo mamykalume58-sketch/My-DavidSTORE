@@ -4,6 +4,7 @@ import 'category_screen.dart';
 import 'favorites_screen.dart';
 import 'cart_screen.dart';
 import 'product_screen.dart';
+import 'account_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const CategoryScreen(categoryName: 'Toutes'),
     const FavoritesScreen(),
     const CartScreen(),
-    const _ComptePage(),
+    const AccountScreen(),
   ];
 
   @override
@@ -363,19 +364,23 @@ class _AccueilPage extends StatelessWidget {
                       children: [
                         Text(item['name'],
                             style: const TextStyle(
-                                fontSize: 11, color: AppColors.textDark),
+                                fontSize: 11,
+                                color: AppColors.textDark),
                             maxLines: 2),
                         const SizedBox(height: 4),
-                        Text('${(item['price'] as int) ~/ 1000}.000 FC',
+                        Text(
+                            '${(item['price'] as int) ~/ 1000}.000 FC',
                             style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.orangeDark)),
-                        Text('${(item['oldPrice'] as int) ~/ 1000}.000 FC',
+                        Text(
+                            '${(item['oldPrice'] as int) ~/ 1000}.000 FC',
                             style: const TextStyle(
                                 fontSize: 10,
                                 color: AppColors.textGrey,
-                                decoration: TextDecoration.lineThrough)),
+                                decoration:
+                                    TextDecoration.lineThrough)),
                       ],
                     ),
                   ),
@@ -384,21 +389,6 @@ class _AccueilPage extends StatelessWidget {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-}
-
-// ── PAGE COMPTE ───────────────────────────────────────────
-class _ComptePage extends StatelessWidget {
-  const _ComptePage();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SafeArea(
-      child: Center(
-        child: Text('Compte - Bientôt disponible',
-            style: TextStyle(color: AppColors.textGrey)),
       ),
     );
   }

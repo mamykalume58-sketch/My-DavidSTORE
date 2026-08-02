@@ -1,0 +1,180 @@
+import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import 'welcome_screen.dart';
+
+class AccountScreen extends StatelessWidget {
+  const AccountScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F7F7),
+      appBar: AppBar(
+        backgroundColor: AppColors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: const Text('Mon compte',
+            style: TextStyle(
+                color: AppColors.textDark,
+                fontSize: 18,
+                fontWeight: FontWeight.w700)),
+      ),
+      body: ListView(
+        children: [
+          // Profil
+          Container(
+            color: AppColors.white,
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.orangeDark,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text('D',
+                        style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('David Utilisateur',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textDark)),
+                    SizedBox(height: 4),
+                    Text('david@example.com',
+                        style: TextStyle(
+                            fontSize: 13, color: AppColors.textGrey)),
+                  ],
+                ),
+                const Spacer(),
+                const Icon(Icons.edit_outlined,
+                    color: AppColors.orangeDark),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Section commandes
+          _buildSection([
+            _buildTile(
+              icon: Icons.shopping_bag_outlined,
+              label: 'Mes commandes',
+              onTap: () {},
+            ),
+            _buildTile(
+              icon: Icons.location_on_outlined,
+              label: 'Mes adresses',
+              onTap: () {},
+            ),
+            _buildTile(
+              icon: Icons.favorite_border,
+              label: 'Mes favoris',
+              onTap: () {},
+            ),
+          ]),
+          const SizedBox(height: 12),
+
+          // Section paramètres
+          _buildSection([
+            _buildTile(
+              icon: Icons.notifications_outlined,
+              label: 'Notifications',
+              onTap: () {},
+            ),
+            _buildTile(
+              icon: Icons.lock_outline,
+              label: 'Sécurité & mot de passe',
+              onTap: () {},
+            ),
+            _buildTile(
+              icon: Icons.language_outlined,
+              label: 'Langue',
+              trailing: const Text('Français',
+                  style: TextStyle(
+                      color: AppColors.textGrey, fontSize: 13)),
+              onTap: () {},
+            ),
+          ]),
+          const SizedBox(height: 12),
+
+          // Déconnexion
+          Container(
+            color: AppColors.white,
+            child: ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Se déconnecter',
+                  style: TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.w600)),
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const WelcomeScreen()),
+                  (route) => false,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Version
+          const Center(
+            child: Text('DavidSTORE v1.0.0',
+                style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(List<Widget> tiles) {
+    return Container(
+      color: AppColors.white,
+      child: Column(children: tiles),
+    );
+  }
+
+  Widget _buildTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Widget? trailing,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF1EB),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.orangeDark, size: 20),
+          ),
+          title: Text(label,
+              style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textDark,
+                  fontWeight: FontWeight.w500)),
+          trailing: trailing ??
+              const Icon(Icons.chevron_right, color: AppColors.textGrey),
+          onTap: onTap,
+        ),
+        const Divider(height: 1, indent: 68, color: Color(0xFFF0F0F0)),
+      ],
+    );
+  }
+}
