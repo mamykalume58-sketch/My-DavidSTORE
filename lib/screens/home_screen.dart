@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'category_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,7 @@ class HomeScreen extends StatelessWidget {
             _buildBanner(),
             _buildQuickInfoRow(),
             _buildSectionTitle('Catégories', showAll: true),
-            _buildCategories(),
+            _buildCategories(context),
             _buildSectionTitle('Réductions du jour', showAll: true),
             _buildDiscounts(),
             const SizedBox(height: 20),
@@ -185,7 +186,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategories() {
+  Widget _buildCategories(BuildContext context) {
     final categories = [
       (Icons.devices_other, 'Électronique'),
       (Icons.checkroom, 'Mode'),
@@ -201,20 +202,30 @@ class HomeScreen extends StatelessWidget {
         children: categories.map((cat) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Column(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF1EB),
-                    borderRadius: BorderRadius.circular(16),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CategoryScreen(categoryName: cat.$2),
                   ),
-                  child: Icon(cat.$1, color: AppColors.orangeDark),
-                ),
-                const SizedBox(height: 6),
-                Text(cat.$2, style: const TextStyle(fontSize: 11, color: AppColors.textDark)),
-              ],
+                );
+              },
+              child: Column(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1EB),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(cat.$1, color: AppColors.orangeDark),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(cat.$2, style: const TextStyle(fontSize: 11, color: AppColors.textDark)),
+                ],
+              ),
             ),
           );
         }).toList(),
