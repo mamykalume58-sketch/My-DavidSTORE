@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'welcome_screen.dart';
+import 'register_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -30,7 +30,7 @@ class AccountScreen extends StatelessWidget {
                 Container(
                   width: 64,
                   height: 64,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.orangeDark,
                     shape: BoxShape.circle,
                   ),
@@ -43,9 +43,9 @@ class AccountScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Column(
+                const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text('David Utilisateur',
                         style: TextStyle(
                             fontSize: 16,
@@ -65,19 +65,21 @@ class AccountScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Section commandes
           _buildSection([
             _buildTile(
+              context: context,
               icon: Icons.shopping_bag_outlined,
               label: 'Mes commandes',
               onTap: () {},
             ),
             _buildTile(
+              context: context,
               icon: Icons.location_on_outlined,
               label: 'Mes adresses',
               onTap: () {},
             ),
             _buildTile(
+              context: context,
               icon: Icons.favorite_border,
               label: 'Mes favoris',
               onTap: () {},
@@ -85,19 +87,21 @@ class AccountScreen extends StatelessWidget {
           ]),
           const SizedBox(height: 12),
 
-          // Section paramètres
           _buildSection([
             _buildTile(
+              context: context,
               icon: Icons.notifications_outlined,
               label: 'Notifications',
               onTap: () {},
             ),
             _buildTile(
+              context: context,
               icon: Icons.lock_outline,
               label: 'Sécurité & mot de passe',
               onTap: () {},
             ),
             _buildTile(
+              context: context,
               icon: Icons.language_outlined,
               label: 'Langue',
               trailing: const Text('Français',
@@ -120,7 +124,7 @@ class AccountScreen extends StatelessWidget {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const WelcomeScreen()),
+                      builder: (_) => const RegisterScreen()),
                   (route) => false,
                 );
               },
@@ -128,7 +132,6 @@ class AccountScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Version
           const Center(
             child: Text('DavidSTORE v1.0.0',
                 style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
@@ -147,6 +150,7 @@ class AccountScreen extends StatelessWidget {
   }
 
   Widget _buildTile({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
