@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "27947559228",
+    "project_id": "davidstore-757d8",
+    "storage_bucket": "davidstore-757d8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:27947559228:android:f8897ae1458bfb39911639",
+        "android_client_info": {
+          "package_name": "com.example.davidstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACjuaBKzSJESZv3lUTz-L7hjd9swC5f9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
