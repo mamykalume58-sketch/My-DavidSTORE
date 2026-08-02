@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'product_screen.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String categoryName;
@@ -8,11 +9,11 @@ class CategoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final products = [
-      ('Smartphone Samsung\nGalaxy A14 64GB', '250.000 FC', '300.000 FC', '-17%'),
-      ('iPhone 13 128GB', '850.000 FC', '1.000.000 FC', '-15%'),
-      ('Casque Bluetooth\nSony WH-CH520', '25.000 FC', '30.000 FC', '-17%'),
-      ('Enceinte JBL Charge 5', '60.000 FC', '70.000 FC', '-14%'),
-      ('Ordinateur Portable\nHP 15s', '600.000 FC', '700.000 FC', '-14%'),
+      ('Smartphone Samsung\nGalaxy A14 64GB', 250000, 300000, '-17%'),
+      ('iPhone 13 128GB', 850000, 1000000, '-15%'),
+      ('Casque Bluetooth\nSony WH-CH520', 25000, 30000, '-17%'),
+      ('Enceinte JBL Charge 5', 60000, 70000, '-14%'),
+      ('Ordinateur Portable\nHP 15s', 600000, 700000, '-14%'),
     ];
 
     return Scaffold(
@@ -93,57 +94,72 @@ class CategoryScreen extends StatelessWidget {
                   const Divider(height: 1, color: Color(0xFFF0F0F0)),
               itemBuilder: (context, index) {
                 final item = products[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF7F7F7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.image_outlined,
-                            color: AppColors.textGrey),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.$1,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textDark,
-                                    fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 6),
-                            Text(item.$2,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.orangeDark)),
-                          ],
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductScreen(
+                          name: item.$1,
+                          price: item.$2,
+                          oldPrice: item.$3,
+                          discount: item.$4,
                         ),
                       ),
-                      if (item.$4.isNotEmpty)
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
+                          width: 64,
+                          height: 64,
                           decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
+                            color: const Color(0xFFF7F7F7),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text(item.$4,
-                              style: const TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700)),
+                          child: const Icon(Icons.image_outlined,
+                              color: AppColors.textGrey),
                         ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.favorite_border,
-                          color: AppColors.textGrey, size: 20),
-                    ],
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(item.$1,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textDark,
+                                      fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 6),
+                              Text('${item.$2 ~/ 1000}.000 FC',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.orangeDark)),
+                            ],
+                          ),
+                        ),
+                        if (item.$4.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(item.$4,
+                                style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700)),
+                          ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.favorite_border,
+                            color: AppColors.textGrey, size: 20),
+                      ],
+                    ),
                   ),
                 );
               },

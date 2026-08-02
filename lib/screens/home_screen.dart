@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import 'category_screen.dart';
 import 'favorites_screen.dart';
 import 'cart_screen.dart';
+import 'product_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -57,6 +58,27 @@ class _HomeScreenState extends State<HomeScreen> {
 class _AccueilPage extends StatelessWidget {
   const _AccueilPage();
 
+  final List<Map<String, dynamic>> _discounts = const [
+    {
+      'name': 'Casque Bluetooth\nSony WH-CH520',
+      'price': 25000,
+      'oldPrice': 30000,
+      'discount': '-17%',
+    },
+    {
+      'name': 'Montre Connectée',
+      'price': 45000,
+      'oldPrice': 60000,
+      'discount': '-16%',
+    },
+    {
+      'name': 'Sac à dos',
+      'price': 18000,
+      'oldPrice': 22000,
+      'discount': '-20%',
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -70,7 +92,7 @@ class _AccueilPage extends StatelessWidget {
           _buildSectionTitle('Catégories', showAll: true),
           _buildCategories(context),
           _buildSectionTitle('Réductions du jour', showAll: true),
-          _buildDiscounts(),
+          _buildDiscounts(context),
           const SizedBox(height: 20),
         ],
       ),
@@ -162,8 +184,7 @@ class _AccueilPage extends StatelessWidget {
                   fontWeight: FontWeight.w700)),
           SizedBox(height: 8),
           Text('Découvrez DavidSTORE...',
-              style:
-                  TextStyle(color: AppColors.whiteMuted, fontSize: 12)),
+              style: TextStyle(color: AppColors.whiteMuted, fontSize: 12)),
         ],
       ),
     );
@@ -269,87 +290,97 @@ class _AccueilPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDiscounts() {
-    final discounts = [
-      ('Casque Bluetooth\nSony WH-CH520', '25.000 FC', '30.000 FC', '-17%'),
-      ('Montre Connectée', '45.000 FC', '60.000 FC', '-16%'),
-      ('Sac à dos', '18.000 FC', '22.000 FC', '-20%'),
-    ];
+  Widget _buildDiscounts(BuildContext context) {
     return SizedBox(
       height: 190,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: discounts.map((item) {
-          return Container(
-            width: 130,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFEEEEEE)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    Container(
-                      height: 90,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF7F7F7),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.image_outlined,
-                            color: AppColors.textGrey, size: 32),
-                      ),
-                    ),
-                    Positioned(
-                      top: 6,
-                      left: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(item.$4,
-                            style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700)),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.$1,
-                          style: const TextStyle(
-                              fontSize: 11, color: AppColors.textDark),
-                          maxLines: 2),
-                      const SizedBox(height: 4),
-                      Text(item.$2,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.orangeDark)),
-                      Text(item.$3,
-                          style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.textGrey,
-                              decoration: TextDecoration.lineThrough)),
-                    ],
+        children: _discounts.map((item) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProductScreen(
+                    name: item['name'],
+                    price: item['price'],
+                    oldPrice: item['oldPrice'],
+                    discount: item['discount'],
                   ),
                 ),
-              ],
+              );
+            },
+            child: Container(
+              width: 130,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFEEEEEE)),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      Container(
+                        height: 90,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF7F7F7),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.image_outlined,
+                              color: AppColors.textGrey, size: 32),
+                        ),
+                      ),
+                      Positioned(
+                        top: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(item['discount'],
+                              style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item['name'],
+                            style: const TextStyle(
+                                fontSize: 11, color: AppColors.textDark),
+                            maxLines: 2),
+                        const SizedBox(height: 4),
+                        Text('${(item['price'] as int) ~/ 1000}.000 FC',
+                            style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.orangeDark)),
+                        Text('${(item['oldPrice'] as int) ~/ 1000}.000 FC',
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.textGrey,
+                                decoration: TextDecoration.lineThrough)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }).toList(),
