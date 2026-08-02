@@ -12,7 +12,20 @@
           "package_name": "com.example.davidstore"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "27947559228-7ilriij5gtkkb7pqvjdfl6bdc17hcm1f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.davidstore",
+            "certificate_hash": "5c71d1cb94418824a529a21c177578950f5af789"
+          }
+        },
+        {
+          "client_id": "27947559228-36j1vtt3pinki041dtpfar6oiptlfhlm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyACjuaBKzSJESZv3lUTz-L7hjd9swC5f9E"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "27947559228-36j1vtt3pinki041dtpfar6oiptlfhlm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
