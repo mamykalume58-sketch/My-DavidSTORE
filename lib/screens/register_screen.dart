@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 
@@ -13,6 +15,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
+  bool _isGoogleLoading = false;
+  bool _googleInitialized = false;
+
+  Future<void> _ensureGoogleInitialized() async {
+    if (_googleInitialized) return;
+    await GoogleSignIn.instance.initialize();
+    _googleInitialized = true;
+  }
 
   void _goToHome() {
     Navigator.of(context).pushReplacement(
@@ -20,7 +30,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      await _ensureGoogleInitialized();
+
+      final googleUser = await GoogleSignIn.instance.authenticate();
+
+      final idToken = googleUser.authentication.idToken;
+
+      final authorization = await googleUser.authorizationClient
+          .authorizationForScopes(['email', 'profile']);
+
+      final credential = GoogleAuthProvider.credential(
+        idToken: idToken,
+        accessToken: authorization?.accessToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (!mounted) return;
+      _goToHome();
+    } catch (e) {
+      setState(() => _isGoogleLoading = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de connexion Google : $e')),
+      );
+      return;
+    }
+    if (mounted) setState(() => _isGoogleLoading = false);
+  }
+
   void _handleSocialLogin(String provider) {
+    if (provider == 'Google') {
+      _signInWithGoogle();
+      return;
+    }
+    // Facebook et Apple restent en simulation pour l'instant
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -218,10 +265,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   Expanded(
                     child: _buildSocialButton(
-                      child: Image.asset('assets/images/google_logo.png',
-                          width: 20, height: 20),
+                      child: _isGoogleLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Image.asset('assets/images/google_logo.png',
+                              width: 20, height: 20),
                       label: 'Google',
-                      onTap: () => _handleSocialLogin('Google'),
+                      onTap: _isGoogleLoading
+                          ? () {}
+                          : () => _handleSocialLogin('Google'),
                     ),
                   ),
                   const SizedBox(width: 10),
