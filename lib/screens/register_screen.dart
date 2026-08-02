@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import '../theme/app_theme.dart';
 import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -12,399 +9,163 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-  bool _acceptTerms = false;
-  bool _isGoogleLoading = false;
-  bool _isFacebookLoading = false;
-  bool _googleInitialized = false;
+class _RegisterScreenState extends State<RegisterScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
-  Future<void> _ensureGoogleInitialized() async {
-    if (_googleInitialized) return;
-    await GoogleSignIn.instance.initialize(
-      serverClientId:
-          '27947559228-36j1vtt3pinki041dtpfar6oiptlfhlm.apps.googleusercontent.com',
-    );
-    _googleInitialized = true;
-  }
+  final _nomController = TextEditingController();
+  final _emailInscriptionController = TextEditingController();
+  final _mdpInscriptionController = TextEditingController();
+  final _confirmMdpController = TextEditingController();
 
-  void _goToHome() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
-  }
+  final _emailConnexionController = TextEditingController();
+  final _mdpConnexionController = TextEditingController();
 
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isGoogleLoading = true);
-    try {
-      await _ensureGoogleInitialized();
+  bool _mdpInscriptionVisible = false;
+  bool _confirmMdpVisible = false;
+  bool _mdpConnexionVisible = false;
+  bool _loading = false;
 
-      final googleUser = await GoogleSignIn.instance.authenticate();
-
-      final idToken = googleUser.authentication.idToken;
-
-      final authorization = await googleUser.authorizationClient
-          .authorizationForScopes(['email', 'profile']);
-
-      final credential = GoogleAuthProvider.credential(
-        idToken: idToken,
-        accessToken: authorization?.accessToken,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      if (!mounted) return;
-      _goToHome();
-    } catch (e) {
-      setState(() => _isGoogleLoading = false);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur de connexion Google : $e')),
-      );
-      return;
-    }
-    if (mounted) setState(() => _isGoogleLoading = false);
-  }
-
-  Future<void> _signInWithFacebook() async {
-    setState(() => _isFacebookLoading = true);
-    try {
-      final result = await FacebookAuth.instance.login(
-        permissions: ['email', 'public_profile'],
-      );
-
-      if (result.status != LoginStatus.success) {
-        setState(() => _isFacebookLoading = false);
-        return;
-      }
-
-      final accessToken = result.accessToken;
-      if (accessToken == null) {
-        setState(() => _isFacebookLoading = false);
-        return;
-      }
-
-      final credential =
-          FacebookAuthProvider.credential(accessToken.tokenString);
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      if (!mounted) return;
-      _goToHome();
-    } catch (e) {
-      setState(() => _isFacebookLoading = false);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur de connexion Facebook : $e')),
-      );
-      return;
-    }
-    if (mounted) setState(() => _isFacebookLoading = false);
-  }
-
-  void _handleSocialLogin(String provider) {
-    if (provider == 'Google') {
-      _signInWithGoogle();
-      return;
-    }
-    if (provider == 'Facebook') {
-      _signInWithFacebook();
-      return;
-    }
-    // Apple reste en simulation pour l'instant
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Continuer avec $provider',
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _goToHome();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.orangeDark,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text('Se connecter',
-                        style: TextStyle(color: AppColors.white)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _goToHome();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.orangeDark),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text('Créer un compte',
-                        style: TextStyle(color: AppColors.orangeDark)),
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const SizedBox(height: 24),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Créer un compte',
-                  style: TextStyle(
-                    color: AppColors.textDark,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Rejoignez DavidSTORE et profitez d\'une\nexpérience d\'achat unique.',
-                  style: TextStyle(color: AppColors.textGrey, fontSize: 14),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildField(icon: Icons.person_outline, hint: 'Nom complet'),
-              const SizedBox(height: 14),
-              _buildField(icon: Icons.email_outlined, hint: 'Adresse e-mail'),
-              const SizedBox(height: 14),
-              _buildField(
-                icon: Icons.lock_outline,
-                hint: 'Mot de passe',
-                obscure: _obscurePassword,
-                toggleObscure: () =>
-                    setState(() => _obscurePassword = !_obscurePassword),
-              ),
-              const SizedBox(height: 14),
-              _buildField(
-                icon: Icons.lock_outline,
-                hint: 'Confirmer le mot de passe',
-                obscure: _obscureConfirmPassword,
-                toggleObscure: () => setState(
-                    () => _obscureConfirmPassword = !_obscureConfirmPassword),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Checkbox(
-                    value: _acceptTerms,
-                    onChanged: (value) =>
-                        setState(() => _acceptTerms = value ?? false),
-                    activeColor: AppColors.orangeDark,
-                    side: const BorderSide(color: AppColors.textGrey),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Text.rich(
-                        TextSpan(
-                          style: const TextStyle(
-                              color: AppColors.textDark, fontSize: 13),
-                          children: [
-                            const TextSpan(text: 'J\'accepte les '),
-                            TextSpan(
-                              text: 'Conditions d\'utilisation',
-                              style: const TextStyle(color: AppColors.orangeDark),
-                            ),
-                            const TextSpan(text: ' et la '),
-                            TextSpan(
-                              text: 'Politique de confidentialité',
-                              style: const TextStyle(color: AppColors.orangeDark),
-                            ),
-                            const TextSpan(text: ' de DavidSTORE.'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _goToHome,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.orangeDark,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'S\'inscrire',
-                        style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward, color: AppColors.white, size: 18),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: const [
-                  Expanded(child: Divider(color: AppColors.textGrey)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Text('OU S\'INSCRIRE AVEC',
-                        style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
-                  ),
-                  Expanded(child: Divider(color: AppColors.textGrey)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSocialButton(
-                      child: _isGoogleLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Image.asset('assets/images/google_logo.png',
-                              width: 20, height: 20),
-                      label: 'Google',
-                      onTap: _isGoogleLoading
-                          ? () {}
-                          : () => _handleSocialLogin('Google'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildSocialButton(
-                      child: _isFacebookLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.facebook,
-                              color: Color(0xFF1877F2), size: 22),
-                      label: 'Facebook',
-                      onTap: _isFacebookLoading
-                          ? () {}
-                          : () => _handleSocialLogin('Facebook'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildSocialButton(
-                      child: const Icon(Icons.apple, color: AppColors.textDark, size: 22),
-                      label: 'Apple',
-                      onTap: () => _handleSocialLogin('Apple'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Vous avez déjà un compte ? ',
-                      style: TextStyle(color: AppColors.textGrey, fontSize: 14)),
-                  GestureDetector(
-                    onTap: () {},
-                    child: const Text(
-                      'Se connecter',
-                      style: TextStyle(
-                          color: AppColors.orangeDark,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
-    );
+  void dispose() {
+    _tabController.dispose();
+    _nomController.dispose();
+    _emailInscriptionController.dispose();
+    _mdpInscriptionController.dispose();
+    _confirmMdpController.dispose();
+    _emailConnexionController.dispose();
+    _mdpConnexionController.dispose();
+    super.dispose();
   }
 
-  Widget _buildField({
-    required IconData icon,
+  Future<void> _inscrire() async {
+    if (_mdpInscriptionController.text != _confirmMdpController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Les mots de passe ne correspondent pas')),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailInscriptionController.text.trim(),
+        password: _mdpInscriptionController.text.trim(),
+      );
+      await FirebaseAuth.instance.currentUser
+          ?.updateDisplayName(_nomController.text.trim());
+      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'Erreur lors de l\'inscription';
+      if (e.code == 'email-already-in-use') {
+        message = 'Cet email est déjà utilisé';
+      } else if (e.code == 'weak-password') {
+        message = 'Mot de passe trop faible (min. 6 caractères)';
+      } else if (e.code == 'invalid-email') {
+        message = 'Email invalide';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _connecter() async {
+    setState(() => _loading = true);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailConnexionController.text.trim(),
+        password: _mdpConnexionController.text.trim(),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'Erreur de connexion';
+      if (e.code == 'user-not-found') {
+        message = 'Aucun compte trouvé avec cet email';
+      } else if (e.code == 'wrong-password') {
+        message = 'Mot de passe incorrect';
+      } else if (e.code == 'invalid-email') {
+        message = 'Email invalide';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    if (_emailConnexionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Entrez votre email d\'abord')),
+      );
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailConnexionController.text.trim(),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email de réinitialisation envoyé !')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: $e')),
+      );
+    }
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
     required String hint,
-    bool obscure = false,
-    VoidCallback? toggleObscure,
+    required IconData icon,
+    bool isPassword = false,
+    bool? passwordVisible,
+    VoidCallback? onToggleVisibility,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textGrey),
+        color: const Color(0xFF1A2E5A),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
       ),
       child: TextField(
-        obscureText: obscure,
-        style: const TextStyle(color: AppColors.textDark),
+        controller: controller,
+        obscureText: isPassword && !(passwordVisible ?? false),
+        keyboardType: keyboardType,
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: AppColors.textGrey, size: 20),
-          suffixIcon: toggleObscure != null
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.white38),
+          prefixIcon: Icon(icon, color: const Color(0xFFFF6B00)),
+          suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    obscure ? Icons.visibility_off : Icons.visibility,
-                    color: AppColors.textGrey,
-                    size: 20,
+                    (passwordVisible ?? false)
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Colors.white38,
                   ),
-                  onPressed: toggleObscure,
+                  onPressed: onToggleVisibility,
                 )
               : null,
-          hintText: hint,
-          hintStyle: const TextStyle(color: AppColors.textGrey),
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -413,26 +174,187 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildSocialButton({
-    required Widget child,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.textGrey),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+  Widget _buildInscriptionTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          _buildTextField(
+            controller: _nomController,
+            hint: 'Nom complet',
+            icon: Icons.person_outline,
+          ),
+          _buildTextField(
+            controller: _emailInscriptionController,
+            hint: 'Adresse e-mail',
+            icon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
+          ),
+          _buildTextField(
+            controller: _mdpInscriptionController,
+            hint: 'Mot de passe',
+            icon: Icons.lock_outline,
+            isPassword: true,
+            passwordVisible: _mdpInscriptionVisible,
+            onToggleVisibility: () {
+              setState(() => _mdpInscriptionVisible = !_mdpInscriptionVisible);
+            },
+          ),
+          _buildTextField(
+            controller: _confirmMdpController,
+            hint: 'Confirmer le mot de passe',
+            icon: Icons.lock_outline,
+            isPassword: true,
+            passwordVisible: _confirmMdpVisible,
+            onToggleVisibility: () {
+              setState(() => _confirmMdpVisible = !_confirmMdpVisible);
+            },
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _loading ? null : _inscrire,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6B00),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "S'inscrire",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => _tabController.animateTo(1),
+            child: const Text(
+              'Déjà un compte ? Se connecter',
+              style: TextStyle(color: Color(0xFFFF6B00)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConnexionTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          _buildTextField(
+            controller: _emailConnexionController,
+            hint: 'Adresse e-mail',
+            icon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
+          ),
+          _buildTextField(
+            controller: _mdpConnexionController,
+            hint: 'Mot de passe',
+            icon: Icons.lock_outline,
+            isPassword: true,
+            passwordVisible: _mdpConnexionVisible,
+            onToggleVisibility: () {
+              setState(() => _mdpConnexionVisible = !_mdpConnexionVisible);
+            },
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _resetPassword,
+              child: const Text(
+                'Mot de passe oublié ?',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _loading ? null : _connecter,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6B00),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      'Se connecter',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => _tabController.animateTo(0),
+            child: const Text(
+              "Pas encore de compte ? S'inscrire",
+              style: TextStyle(color: Color(0xFFFF6B00)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D1B3E),
+      body: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            child,
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: AppColors.textDark, fontSize: 12)),
+            const SizedBox(height: 32),
+            Image.asset('assets/images/logo.png', height: 80),
+            const SizedBox(height: 24),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A2E5A),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: const Color(0xFFFF6B00),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white54,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                tabs: const [
+                  Tab(text: "S'inscrire"),
+                  Tab(text: 'Se connecter'),
+                ],
+              ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildInscriptionTab(),
+                  _buildConnexionTab(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
