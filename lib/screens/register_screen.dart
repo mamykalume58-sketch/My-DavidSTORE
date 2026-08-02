@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 
@@ -16,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
   bool _isGoogleLoading = false;
+  bool _isFacebookLoading = false;
   bool _googleInitialized = false;
 
   Future<void> _ensureGoogleInitialized() async {
@@ -65,12 +67,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (mounted) setState(() => _isGoogleLoading = false);
   }
 
+  Future<void> _signInWithFacebook() async {
+    setState(() => _isFacebookLoading = true);
+    try {
+      final result = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
+
+      if (result.status != LoginStatus.success) {
+        setState(() => _isFacebookLoading = false);
+        return;
+      }
+
+      final accessToken = result.accessToken;
+      if (accessToken == null) {
+        setState(() => _isFacebookLoading = false);
+        return;
+      }
+
+      final credential =
+          FacebookAuthProvider.credential(accessToken.tokenString);
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (!mounted) return;
+      _goToHome();
+    } catch (e) {
+      setState(() => _isFacebookLoading = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de connexion Facebook : $e')),
+      );
+      return;
+    }
+    if (mounted) setState(() => _isFacebookLoading = false);
+  }
+
   void _handleSocialLogin(String provider) {
     if (provider == 'Google') {
       _signInWithGoogle();
       return;
     }
-    // Facebook et Apple restent en simulation pour l'instant
+    if (provider == 'Facebook') {
+      _signInWithFacebook();
+      return;
+    }
+    // Apple reste en simulation pour l'instant
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -285,10 +327,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _buildSocialButton(
-                      child: const Icon(Icons.facebook,
-                          color: Color(0xFF1877F2), size: 22),
+                      child: _isFacebookLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.facebook,
+                              color: Color(0xFF1877F2), size: 22),
                       label: 'Facebook',
-                      onTap: () => _handleSocialLogin('Facebook'),
+                      onTap: _isFacebookLoading
+                          ? () {}
+                          : () => _handleSocialLogin('Facebook'),
                     ),
                   ),
                   const SizedBox(width: 10),
