@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../theme/app_theme.dart';
 import 'register_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
+  Future<void> _signOut(BuildContext context) async {
+    await GoogleSignIn.instance.signOut();
+    await FirebaseAuth.instance.signOut();
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? 'Utilisateur DavidSTORE';
+    final email = user?.email ?? 'Non connecté';
+    final photoUrl = user?.photoURL;
+    final initial =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : 'D';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
@@ -34,26 +54,42 @@ class AccountScreen extends StatelessWidget {
                     color: AppColors.orangeDark,
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
-                    child: Text('D',
-                        style: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800)),
-                  ),
+                  child: photoUrl != null
+                      ? ClipOval(
+                          child: Image.network(
+                            photoUrl,
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Text(initial,
+                                  style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w800)),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(initial,
+                              style: const TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800)),
+                        ),
                 ),
                 const SizedBox(width: 16),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('David Utilisateur',
-                        style: TextStyle(
+                    Text(displayName,
+                        style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textDark)),
-                    SizedBox(height: 4),
-                    Text('david@example.com',
-                        style: TextStyle(
+                    const SizedBox(height: 4),
+                    Text(email,
+                        style: const TextStyle(
                             fontSize: 13, color: AppColors.textGrey)),
                   ],
                 ),
@@ -120,14 +156,7 @@ class AccountScreen extends StatelessWidget {
               title: const Text('Se déconnecter',
                   style: TextStyle(
                       color: Colors.red, fontWeight: FontWeight.w600)),
-              onTap: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const RegisterScreen()),
-                  (route) => false,
-                );
-              },
+              onTap: () => _signOut(context),
             ),
           ),
           const SizedBox(height: 24),
