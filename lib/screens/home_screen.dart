@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'category_screen.dart';
 import 'favorites_screen.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const _AccueilPage(),
     const CategoryScreen(categoryName: 'Toutes'),
     const FavoritesScreen(),
-    const _PanierPage(),
+    const CartScreen(),
     const _ComptePage(),
   ];
 
@@ -161,7 +162,8 @@ class _AccueilPage extends StatelessWidget {
                   fontWeight: FontWeight.w700)),
           SizedBox(height: 8),
           Text('Découvrez DavidSTORE...',
-              style: TextStyle(color: AppColors.whiteMuted, fontSize: 12)),
+              style:
+                  TextStyle(color: AppColors.whiteMuted, fontSize: 12)),
         ],
       ),
     );
@@ -210,7 +212,8 @@ class _AccueilPage extends StatelessWidget {
           const Spacer(),
           if (showAll)
             const Text('Voir tout',
-                style: TextStyle(fontSize: 13, color: AppColors.orangeDark)),
+                style: TextStyle(
+                    fontSize: 13, color: AppColors.orangeDark)),
         ],
       ),
     );
@@ -237,7 +240,8 @@ class _AccueilPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => CategoryScreen(categoryName: cat.$2),
+                    builder: (_) =>
+                        CategoryScreen(categoryName: cat.$2),
                   ),
                 );
               },
@@ -349,21 +353,6 @@ class _AccueilPage extends StatelessWidget {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-}
-
-// ── PAGE PANIER ───────────────────────────────────────────
-class _PanierPage extends StatelessWidget {
-  const _PanierPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SafeArea(
-      child: Center(
-        child: Text('Panier - Bientôt disponible',
-            style: TextStyle(color: AppColors.textGrey)),
       ),
     );
   }
