@@ -12,6 +12,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+
   @override
   void initState() {
     super.initState();
@@ -21,17 +22,29 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkSessionAndRedirect() async {
     await Future.delayed(const Duration(seconds: 3));
 
-    final hasSeenOnboarding = await SessionService.hasSeenOnboarding();
-    final isLoggedIn = await SessionService.isLoggedIn();
+    final hasSeenOnboarding =
+        await SessionService.hasSeenOnboarding();
+
+    final isLoggedIn =
+        await SessionService.isLoggedIn();
 
     if (!mounted) return;
 
     if (!hasSeenOnboarding) {
-      Navigator.pushReplacementNamed(context, '/onboarding');
+      Navigator.pushReplacementNamed(
+        context,
+        '/onboarding',
+      );
     } else if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(
+        context,
+        '/home',
+      );
     } else {
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(
+        context,
+        '/login',
+      );
     }
   }
 
@@ -39,30 +52,29 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1030),
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(
-              Icons.shopping_bag,
-              size: 90,
-              color: Color(0xFFFF6B35),
+
+          children: [
+
+            Image.asset(
+              'assets/images/splash_logo.png',
+              width: 280,
+              height: 280,
+              fit: BoxFit.contain,
             ),
-            SizedBox(height: 20),
-            Text(
-              'DavidSTORE',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Le shopping intelligent commence ici',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
+
+            const SizedBox(height: 90),
+
+            const SizedBox(
+              width: 32,
+              height: 32,
+
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                color: Color(0xFFFF6B35),
               ),
             ),
           ],
