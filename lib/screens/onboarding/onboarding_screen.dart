@@ -12,12 +12,12 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingPageData {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String imagePath;
 
   const _OnboardingPageData({
     required this.title,
     required this.subtitle,
-    required this.icon,
+    required this.imagePath,
   });
 }
 
@@ -29,22 +29,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPageData(
       title: 'Bienvenue sur DavidSTORE',
       subtitle: 'Le shopping intelligent commence, ici.',
-      icon: Icons.shopping_bag,
+      imagePath: 'assets/images/onboarding/onboarding_1.png',
     ),
     _OnboardingPageData(
       title: 'Large choix de produits',
       subtitle: "Découvrez des milliers d'articles de qualité.",
-      icon: Icons.headphones,
+      imagePath: 'assets/images/onboarding/onboarding_2.png',
     ),
     _OnboardingPageData(
       title: 'Paiement facile et sécurisé',
       subtitle: 'Payez avec M-Pesa, Airtel Money ou Orange Money.',
-      icon: Icons.payment,
+      imagePath: 'assets/images/onboarding/onboarding_3.png',
     ),
     _OnboardingPageData(
       title: 'Livraison rapide et fiable',
       subtitle: 'Nous livrons vos commandes partout en RDC.',
-      icon: Icons.delivery_dining,
+      imagePath: 'assets/images/onboarding/onboarding_4.png',
     ),
   ];
 
@@ -74,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6B35),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -84,7 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPressed: _finishOnboarding,
                 child: const Text(
                   'Passer',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Color(0xFFFF6B35)),
                 ),
               ),
             ),
@@ -100,41 +100,56 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
                 itemBuilder: (context, index) {
                   final page = _pages[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          page.icon,
-                          size: 140,
-                          color: Colors.white,
-                        ),
-
-                        const SizedBox(height: 40),
-
-                        Text(
-                          page.title,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
+                  return Column(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                            ),
+                            child: Image.asset(
+                              page.imagePath,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
+                      ),
 
-                        const SizedBox(height: 12),
+                      const SizedBox(height: 24),
 
-                        Text(
-                          page.subtitle,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          children: [
+                            Text(
+                              page.title,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Color(0xFF0A1030),
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            Text(
+                              page.subtitle,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+
+                      const Spacer(),
+                    ],
                   );
                 },
               ),
@@ -151,8 +166,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: _currentPage == index
-                        ? Colors.white
-                        : Colors.white38,
+                        ? const Color(0xFFFF6B35)
+                        : Colors.black12,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -162,15 +177,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             const SizedBox(height: 24),
 
             Padding(
-              padding: const EdgeInsets.only(bottom: 24, right: 24),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: FloatingActionButton(
-                  backgroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF6B35),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                   onPressed: _onNextPressed,
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    color: Color(0xFFFF6B35),
+                  child: Text(
+                    _currentPage == _pages.length - 1
+                        ? 'Commencer'
+                        : 'Suivant',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
