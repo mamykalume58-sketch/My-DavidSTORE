@@ -1,0 +1,440 @@
+import 'package:flutter/material.dart';
+
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({super.key});
+
+  @override
+  State<ProductScreen> createState() => _ProductScreenState();
+}
+
+class _ProductScreenState extends State<ProductScreen> {
+  static const orange = Color(0xFFFF6B35);
+  static const navy = Color(0xFF0A1030);
+
+  int _quantity = 1;
+  int _selectedColorIndex = 0;
+  int _selectedImageIndex = 0;
+  bool _isFavorite = false;
+
+  final List<Color> _colors = const [
+    Color(0xFF0A1030),
+    Color(0xFFFF6B35),
+    Colors.white,
+    Colors.grey,
+  ];
+
+  final List<String> _characteristics = const [
+    'Écran : 6.6" FHD+',
+    'RAM : 4 Go',
+    'Stockage : 64 Go',
+    'Batterie : 5000 mAh',
+  ];
+
+  void _incrementQuantity() {
+    setState(() {
+      _quantity++;
+    });
+  }
+
+  void _decrementQuantity() {
+    if (_quantity > 1) {
+      setState(() {
+        _quantity--;
+      });
+    }
+  }
+
+  void _addToCart() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Produit ajouté au panier')),
+    );
+  }
+
+  void _buyNow() {
+    Navigator.pushNamed(context, '/cart');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Galerie
+                Container(
+                  height: 320,
+                  width: double.infinity,
+                  color: const Color(0xFFF5F5F7),
+                  child: Center(
+                    child: Icon(
+                      Icons.smartphone,
+                      size: 140,
+                      color: navy.withOpacity(0.7),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Row(
+                    children: List.generate(4, (index) {
+                      final isSelected = _selectedImageIndex == index;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedImageIndex = index;
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F5F7),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected ? orange : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.smartphone,
+                            size: 24,
+                            color: navy,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Smartphone Samsung A14',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: navy,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Row(
+                        children: [
+                          Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                index < 4 ? Icons.star : Icons.star_half,
+                                size: 16,
+                                color: orange,
+                              );
+                            }),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            '4.5 (120 avis)',
+                            style: TextStyle(fontSize: 13, color: Colors.black54),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      const Text(
+                        '450 000 FC',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: orange,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      const Text(
+                        'En stock',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        'Couleur',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: navy,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Row(
+                        children: List.generate(_colors.length, (index) {
+                          final isSelected = _selectedColorIndex == index;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedColorIndex = index;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: _colors[index],
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected ? orange : const Color(0xFFE0E0E0),
+                                  width: isSelected ? 3 : 1,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        'Quantité',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: navy,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Row(
+                        children: [
+                          _quantityButton(Icons.remove, _decrementQuantity),
+                          Container(
+                            width: 50,
+                            alignment: Alignment.center,
+                            child: Text(
+                              '$_quantity',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: navy,
+                              ),
+                            ),
+                          ),
+                          _quantityButton(Icons.add, _incrementQuantity),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        'Description',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: navy,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      const Text(
+                        'Le Samsung Galaxy A14 combine performance et élégance '
+                        'avec son écran 6.6" FHD+, sa batterie longue durée et '
+                        'son appareil photo haute résolution.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        'Caractéristiques',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: navy,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      ..._characteristics.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle, size: 16, color: orange),
+                              const SizedBox(width: 8),
+                              Text(
+                                item,
+                                style: const TextStyle(fontSize: 13, color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Barre du haut (retour, partage, favoris)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _circleIconButton(
+                    Icons.arrow_back,
+                    () => Navigator.pop(context),
+                  ),
+                  Row(
+                    children: [
+                      _circleIconButton(Icons.share, () {}),
+                      const SizedBox(width: 8),
+                      _circleIconButton(
+                        _isFavorite ? Icons.favorite : Icons.favorite_border,
+                        () {
+                          setState(() {
+                            _isFavorite = !_isFavorite;
+                          });
+                        },
+                        iconColor: _isFavorite ? orange : navy,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Boutons en bas
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _addToCart,
+                        icon: const Icon(Icons.shopping_cart_outlined, color: orange),
+                        label: const Text(
+                          'Ajouter au panier',
+                          style: TextStyle(color: orange, fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: const BorderSide(color: orange),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _buyNow,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: orange,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Acheter maintenant',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quantityButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F7),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 18, color: navy),
+      ),
+    );
+  }
+
+  Widget _circleIconButton(
+    IconData icon,
+    VoidCallback onTap, {
+    Color iconColor = navy,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 20, color: iconColor),
+      ),
+    );
+  }
+}
