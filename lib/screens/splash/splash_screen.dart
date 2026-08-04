@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../services/session_service.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -13,10 +15,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _checkSessionAndRedirect();
+  }
 
-    Timer(const Duration(seconds: 3), () {
+  Future<void> _checkSessionAndRedirect() async {
+    await Future.delayed(const Duration(seconds: 3));
+
+    final hasSeenOnboarding = await SessionService.hasSeenOnboarding();
+    final isLoggedIn = await SessionService.isLoggedIn();
+
+    if (!mounted) return;
+
+    if (!hasSeenOnboarding) {
       Navigator.pushReplacementNamed(context, '/onboarding');
-    });
+    } else if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
