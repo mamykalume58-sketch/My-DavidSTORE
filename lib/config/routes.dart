@@ -11,21 +11,13 @@ import '../screens/splash/splash_screen.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> routes = {
-
     '/': (context) => const SplashScreen(),
-
     '/onboarding': (context) => const OnboardingScreen(),
-
     '/login': (context) => const LoginScreen(),
-
     '/register': (context) => const RegisterScreen(),
-
     '/home': (context) => const HomeScreen(),
-
     '/catalog': (context) => const CatalogScreen(),
-
     '/cart': (context) => const CartScreen(),
-
     '/profile': (context) => const ProfileScreen(),
   };
-}}
+}
