@@ -27,23 +27,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_OnboardingPageData> _pages = const [
     _OnboardingPageData(
-      title: 'Bienvenue sur DavidSTORE',
-      subtitle: 'Vos produits préférés, à portée de main.',
+      title: 'Bienvenue sur\nDavidSTORE',
+      subtitle: 'Vos produits préférés,\nà portée de main.',
       imagePath: 'assets/images/onboarding/onboarding_1.png',
     ),
     _OnboardingPageData(
-      title: 'Large choix de produits',
-      subtitle: "Découvrez des milliers d'articles de qualité.",
+      title: 'Large choix\nde produits',
+      subtitle: "Découvrez des milliers\nd'articles de qualité.",
       imagePath: 'assets/images/onboarding/onboarding_2.png',
     ),
     _OnboardingPageData(
-      title: 'Paiement facile et sécurisé',
-      subtitle: 'Payez avec M-Pesa, Airtel Money ou Orange Money.',
+      title: 'Paiement facile\net sécurisé',
+      subtitle: 'Payez avec M-Pesa,\nAirtel Money ou Orange Money.',
       imagePath: 'assets/images/onboarding/onboarding_3.png',
     ),
     _OnboardingPageData(
-      title: 'Livraison rapide et fiable',
-      subtitle: 'Nous livrons vos commandes partout en RDC.',
+      title: 'Livraison rapide\net fiable',
+      subtitle: 'Nous livrons vos commandes\npartout en RDC.',
       imagePath: 'assets/images/onboarding/onboarding_4.png',
     ),
   ];
@@ -74,131 +74,115 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            itemCount: _pages.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              final page = _pages[index];
-              return Image.asset(
-                page.imagePath,
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-              );
-            },
-          ),
+      backgroundColor: const Color(0xFFFF6B35),
+      body: SafeArea(
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: _pages.length,
+          onPageChanged: (index) {
+            setState(() {
+              _currentPage = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            final page = _pages[index];
+            return Column(
+              children: [
+                const SizedBox(height: 32),
 
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextButton(
-                  onPressed: _finishOnboarding,
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.black26,
-                  ),
-                  child: const Text(
-                    'Passer',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(28),
-                  topRight: Radius.circular(28),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _pages[_currentPage].title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF0A1030),
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Text(
-                    _pages[_currentPage].subtitle,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 15,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pages.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == index ? 20 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? const Color(0xFFFF6B35)
-                              : Colors.black12,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF6B35),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onPressed: _onNextPressed,
-                      child: Text(
-                        _currentPage == _pages.length - 1
-                            ? 'Commencer'
-                            : 'Suivant',
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    children: [
+                      Text(
+                        page.title,
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 16,
                           color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
                         ),
                       ),
+
+                      const SizedBox(height: 16),
+
+                      Container(
+                        width: 40,
+                        height: 2,
+                        color: Colors.white54,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      Text(
+                        page.subtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Image.asset(
+                      page.imagePath,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: List.generate(
+                          _pages.length,
+                          (i) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.only(right: 6),
+                            width: _currentPage == i ? 20 : 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: _currentPage == i
+                                  ? Colors.white
+                                  : Colors.white38,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      GestureDetector(
+                        onTap: _onNextPressed,
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
