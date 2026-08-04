@@ -75,23 +75,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFF6B35),
-      body: SafeArea(
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: _pages.length,
-          onPageChanged: (index) {
-            setState(() {
-              _currentPage = index;
-            });
-          },
-          itemBuilder: (context, index) {
-            final page = _pages[index];
-            return Column(
-              children: [
-                const SizedBox(height: 32),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: _pages.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentPage = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          final page = _pages[index];
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // Image en fond, plein écran
+              Image.asset(
+                page.imagePath,
+                fit: BoxFit.cover,
+              ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+              // Texte en haut
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 0),
                   child: Column(
                     children: [
                       Text(
@@ -102,6 +108,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
                           height: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black38,
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
                       ),
 
@@ -110,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Container(
                         width: 40,
                         height: 2,
-                        color: Colors.white54,
+                        color: Colors.white70,
                       ),
 
                       const SizedBox(height: 16),
@@ -119,70 +131,75 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         page.subtitle,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Colors.white,
                           fontSize: 15,
                           height: 1.4,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black38,
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+              ),
 
-                Expanded(
+              // Points + flèche en bas
+              SafeArea(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 24),
-                    child: Image.asset(
-                      page.imagePath,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: List.generate(
-                          _pages.length,
-                          (i) => AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.only(right: 6),
-                            width: _currentPage == i ? 20 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _currentPage == i
-                                  ? Colors.white
-                                  : Colors.white38,
-                              borderRadius: BorderRadius.circular(4),
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: List.generate(
+                            _pages.length,
+                            (i) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              margin: const EdgeInsets.only(right: 6),
+                              width: _currentPage == i ? 20 : 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: _currentPage == i
+                                    ? Colors.white
+                                    : Colors.white38,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
                             ),
                           ),
                         ),
-                      ),
 
-                      GestureDetector(
-                        onTap: _onNextPressed,
-                        child: Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_forward,
-                            color: Colors.white,
+                        GestureDetector(
+                          onTap: _onNextPressed,
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
