@@ -28,22 +28,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<_OnboardingPageData> _pages = const [
     _OnboardingPageData(
       title: 'Bienvenue sur\nDavidSTORE',
-      subtitle: 'Vos produits préférés,\nà portée de main.',
+      subtitle: 'Vos produits préférés, à portée de main.',
       imagePath: 'assets/images/onboarding/onboarding_1.png',
     ),
     _OnboardingPageData(
       title: 'Large choix\nde produits',
-      subtitle: "Découvrez des milliers\nd'articles de qualité.",
+      subtitle: "Découvrez des milliers d'articles de qualité.",
       imagePath: 'assets/images/onboarding/onboarding_2.png',
     ),
     _OnboardingPageData(
       title: 'Paiement facile\net sécurisé',
-      subtitle: 'Payez avec M-Pesa,\nAirtel Money ou Orange Money.',
+      subtitle: 'Payez avec M-Pesa, Airtel Money ou Orange Money.',
       imagePath: 'assets/images/onboarding/onboarding_3.png',
     ),
     _OnboardingPageData(
       title: 'Livraison rapide\net fiable',
-      subtitle: 'Nous livrons vos commandes\npartout en RDC.',
+      subtitle: 'Nous livrons vos commandes partout en RDC.',
       imagePath: 'assets/images/onboarding/onboarding_4.png',
     ),
   ];
@@ -73,8 +73,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const orange = Color(0xFFFF6B35);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6B35),
+      backgroundColor: orange,
       body: PageView.builder(
         controller: _pageController,
         itemCount: _pages.length,
@@ -88,16 +90,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              // Image en fond, plein écran
               Image.asset(
                 page.imagePath,
                 fit: BoxFit.cover,
               ),
 
-              // Texte en haut
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 0),
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                   child: Column(
                     children: [
                       Text(
@@ -130,9 +130,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         page.subtitle,
                         textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.visible,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 15,
+                          fontSize: 13,
                           height: 1.4,
                           shadows: [
                             Shadow(
@@ -147,7 +149,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-              // Points + flèche en bas
               SafeArea(
                 child: Align(
                   alignment: Alignment.bottomCenter,
@@ -166,8 +167,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               height: 8,
                               decoration: BoxDecoration(
                                 color: _currentPage == i
-                                    ? Colors.white
-                                    : Colors.white38,
+                                    ? orange
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -179,16 +180,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Container(
                             width: 56,
                             height: 56,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
+                              color: Colors.white,
                             ),
                             child: const Icon(
                               Icons.arrow_forward,
-                              color: Colors.white,
+                              color: orange,
                             ),
                           ),
                         ),
