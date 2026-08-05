@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import '../../services/session_service.dart';
+import '../../services/auth_service.dart';
+import '../../theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,9 +18,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  final AuthService _authService = AuthService();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptedTerms = false;
+  bool _loading = false;
+
+  String _password = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(() {
+      setState(() => _password = _passwordController.text);
+    });
+  }
 
   @override
   void dispose() {
@@ -32,50 +45,104 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  bool get _hasMinLength => _password.length >= 8;
+  bool get _hasUppercase => _password.contains(RegExp(r'[A-Z]'));
+  bool get _hasDigit => _password.contains(RegExp(r'[0-9]'));
+  bool get _hasSpecialChar => _password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>_\-]'));
+
+  InputDecoration _inputDecoration(String hint, IconData icon, {Widget? suffix}) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
+      prefixIcon: Icon(icon, color: AppColors.orangeDark),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(vertical: 18),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColors.orangeDark, width: 1.5),
+      ),
+    );
+  }
+
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez accepter les conditions'),
-        ),
+        const SnackBar(content: Text('Veuillez accepter les conditions')),
       );
       return;
     }
 
-    await SessionService.setLoggedIn();
+    setState(() => _loading = true);
 
-    if (!mounted) return;
+    try {
+      await _authService.registerWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-    Navigator.pushReplacementNamed(context, '/home');
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+
+    if (mounted) setState(() => _loading = false);
   }
 
-  InputDecoration _inputDecoration(
-    String hint,
-    IconData icon,
-  ) {
-    return InputDecoration(
-      hintText: hint,
-      prefixIcon: Icon(
-        icon,
-        color: const Color(0xFFFF6B35),
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: Color(0xFFE5E5E5),
+  Future<void> _googleRegister() async {
+    setState(() => _loading = true);
+
+    try {
+      final user = await _authService.signInWithGoogle();
+
+      if (user != null && mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Widget _requirementPill(String label, bool met) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.check_circle,
+          size: 16,
+          color: met ? AppColors.orangeDark : Colors.grey.shade400,
         ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: Color(0xFFFF6B35),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: met ? AppColors.navyDark : Colors.grey.shade500,
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -83,60 +150,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(28),
-
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
           child: Form(
             key: _formKey,
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
-
                 IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Color(0xFFFF6B35),
-                  ),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back, color: AppColors.orangeDark),
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
 
                 const Text(
                   'Créer un compte',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0A1030),
+                    color: AppColors.navyDark,
                   ),
                 ),
 
                 const SizedBox(height: 8),
 
-                const Text(
+                Text(
                   'Remplissez les informations pour créer\nvotre compte DavidSTORE',
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600, height: 1.4),
                 ),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 28),
 
                 TextFormField(
                   controller: _nameController,
-                  decoration: _inputDecoration(
-                    'Nom complet',
-                    Icons.person_outline,
-                  ),
-                  validator: (v) =>
-                      v!.isEmpty ? 'Entrez votre nom' : null,
+                  decoration: _inputDecoration('Nom complet', Icons.person_outline),
+                  validator: (v) => v == null || v.isEmpty ? 'Entrez votre nom' : null,
                 ),
 
                 const SizedBox(height: 16),
@@ -144,12 +196,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration(
-                    'Email',
-                    Icons.email_outlined,
-                  ),
-                  validator: (v) =>
-                      v!.isEmpty ? 'Entrez votre email' : null,
+                  decoration: _inputDecoration('Email', Icons.email_outlined),
+                  validator: (v) => v == null || v.isEmpty ? 'Entrez votre email' : null,
                 ),
 
                 const SizedBox(height: 16),
@@ -157,10 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration(
-                    'Téléphone',
-                    Icons.phone_outlined,
-                  ),
+                  decoration: _inputDecoration('Téléphone', Icons.phone_outlined),
                 ),
 
                 const SizedBox(height: 16),
@@ -171,26 +216,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: _inputDecoration(
                     'Mot de passe',
                     Icons.lock_outline,
-                  ).copyWith(
-                    suffixIcon: IconButton(
+                    suffix: IconButton(
                       icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: Colors.grey,
                       ),
                       onPressed: () {
-                        setState(() {
-                          _obscurePassword =
-                              !_obscurePassword;
-                        });
+                        setState(() => _obscurePassword = !_obscurePassword);
                       },
                     ),
                   ),
-
                   validator: (v) {
-                    if (v == null || v.length < 8) {
-                      return '8 caractères minimum';
-                    }
+                    if (v == null || v.length < 8) return '8 caractères minimum';
                     return null;
                   },
                 ),
@@ -200,30 +237,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
-
                   decoration: _inputDecoration(
                     'Confirmer le mot de passe',
                     Icons.lock_outline,
-                  ).copyWith(
-                    suffixIcon: IconButton(
+                    suffix: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: Colors.grey,
                       ),
                       onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword =
-                              !_obscureConfirmPassword;
-                        });
+                        setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
                       },
                     ),
                   ),
-
                   validator: (v) {
-                    if (v != _passwordController.text) {
-                      return 'Les mots de passe ne correspondent pas';
-                    }
+                    if (v != _passwordController.text) return 'Les mots de passe ne correspondent pas';
                     return null;
                   },
                 ),
@@ -232,90 +260,99 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const Text(
                   'Le mot de passe doit contenir :',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.navyDark),
                 ),
 
                 const SizedBox(height: 10),
 
-                const Text(
-                  '✓ 8 caractères minimum     ✓ Une majuscule\n'
-                  '✓ Un chiffre                 ✓ Un caractère spécial',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 13,
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                Row(
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
                   children: [
-
-                    Checkbox(
-                      value: _acceptedTerms,
-                      onChanged: (v) {
-                        setState(() {
-                          _acceptedTerms = v ?? false;
-                        });
-                      },
-                    ),
-
-                    const Expanded(
-                      child: Text(
-                        "J'accepte les Conditions d'utilisation "
-                        "et la Politique de confidentialité",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                    ),
+                    _requirementPill('8 caractères minimum', _hasMinLength),
+                    _requirementPill('Une majuscule', _hasUppercase),
+                    _requirementPill('Un chiffre', _hasDigit),
+                    _requirementPill('Un caractère spécial', _hasSpecialChar),
                   ],
                 ),
 
                 const SizedBox(height: 15),
 
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: _acceptedTerms,
+                      activeColor: AppColors.orangeDark,
+                      onChanged: (v) {
+                        setState(() => _acceptedTerms = v ?? false);
+                      },
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                            children: const [
+                              TextSpan(text: "J'accepte les "),
+                              TextSpan(
+                                text: "Conditions d'utilisation",
+                                style: TextStyle(color: AppColors.orangeDark),
+                              ),
+                              TextSpan(text: " et la "),
+                              TextSpan(
+                                text: "Politique de confidentialité",
+                                style: TextStyle(color: AppColors.orangeDark),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
                 SizedBox(
                   width: double.infinity,
-
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFFFF6B35),
-                      padding:
-                          const EdgeInsets.symmetric(
-                        vertical: 17,
+                      backgroundColor: AppColors.orangeDark,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
-                      ),
+                      elevation: 0,
                     ),
-
-                    onPressed: _handleRegister,
-
-                    child: const Text(
-                      "S'inscrire",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    ),
+                    onPressed: _loading ? null : _handleRegister,
+                    child: _loading
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Text(
+                            "S'inscrire",
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 24),
 
-                const Row(
+                Row(
                   children: [
-                    Expanded(child: Divider()),
+                    Expanded(child: Divider(color: Colors.grey.shade300)),
                     Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10),
-                      child:
-                          Text('Ou s’inscrire avec'),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        "Ou s'inscrire avec",
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                      ),
                     ),
-                    Expanded(child: Divider()),
+                    Expanded(child: Divider(color: Colors.grey.shade300)),
                   ],
                 ),
 
@@ -323,59 +360,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 SizedBox(
                   width: double.infinity,
-
                   child: OutlinedButton.icon(
-                    onPressed: () {},
-
+                    onPressed: _loading ? null : _googleRegister,
                     icon: Image.asset(
                       'assets/images/google_logo.png',
-                      width: 24,
-                      height: 24,
+                      width: 22,
+                      height: 22,
                     ),
-
                     label: const Text(
                       'Continuer avec Google',
+                      style: TextStyle(color: AppColors.navyDark, fontSize: 15, fontWeight: FontWeight.w500),
                     ),
-
                     style: OutlinedButton.styleFrom(
-                      padding:
-                          const EdgeInsets.symmetric(
-                        vertical: 16,
-                      ),
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 24),
 
                 Center(
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/login',
-                      );
-                    },
-
-                    child: const Text.rich(
-                      TextSpan(
+                    onTap: () => Navigator.pushNamed(context, '/login'),
+                    child: RichText(
+                      text: TextSpan(
                         text: 'Déjà un compte ? ',
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
-                        children: [
+                        style: TextStyle(color: Colors.grey.shade600),
+                        children: const [
                           TextSpan(
                             text: 'Se connecter',
-                            style: TextStyle(
-                              color: Color(0xFFFF6B35),
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
+                            style: TextStyle(color: AppColors.orangeDark, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
