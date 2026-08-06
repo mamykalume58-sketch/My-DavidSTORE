@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
-const { initializeApp, cert } = require('firebase-admin/app');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
 let serviceAccount;
@@ -11,7 +11,9 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
   serviceAccount = require('./serviceAccountKey.json');
 }
 
-initializeApp({ credential: cert(serviceAccount) });
+if (!getApps().length) {
+  initializeApp({ credential: cert(serviceAccount) });
+}
 const db = getFirestore();
 
 const app = express();
@@ -130,7 +132,11 @@ app.get('/api/shwary/status/:transactionId', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Serveur DavidSTORE Payment démarré sur le port ${PORT}`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Serveur DavidSTORE Payment démarré sur le port ${PORT}`);
+  });
+}
+
+module.exports = app;
