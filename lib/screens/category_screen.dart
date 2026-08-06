@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'product_screen.dart';
+import 'product/product_screen.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String categoryName;
@@ -101,8 +101,8 @@ class CategoryScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => ProductScreen(
                           name: item.$1,
-                          price: item.$2,
-                          oldPrice: item.$3,
+                          price: '${item.$2} FC',
+                          oldPrice: '${item.$3} FC',
                           discount: item.$4,
                         ),
                       ),

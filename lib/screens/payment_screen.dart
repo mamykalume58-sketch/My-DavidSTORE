@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'confirmation_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -10,76 +9,60 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  int _selectedPayment = 0;
+  int _selectedMethod = 0;
 
-  final List<Map<String, dynamic>> _methods = [
-    {
-      'name': 'M-Pesa',
-      'color': const Color(0xFF00A651),
-      'icon': Icons.phone_android,
-    },
-    {
-      'name': 'Airtel Money',
-      'color': const Color(0xFFE40000),
-      'icon': Icons.phone_android,
-    },
-    {
-      'name': 'Orange Money',
-      'color': const Color(0xFFFF6600),
-      'icon': Icons.phone_android,
-    },
+  final List<Map<String, String>> _methods = [
+    {'name': 'M-Pesa', 'desc': 'Paiement rapide et sécurisé', 'logo': 'assets/images/mpesa_logo.png'},
+    {'name': 'Airtel Money', 'desc': 'Paiement rapide et sécurisé', 'logo': 'assets/images/airtel_money_logo.png'},
+    {'name': 'Orange Money', 'desc': 'Paiement rapide et sécurisé', 'logo': 'assets/images/orange_money_logo.png'},
   ];
+
+  void _payer() {
+    Navigator.pushNamed(context, '/confirmation');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Paiement',
-            style: TextStyle(
-                color: AppColors.textDark,
-                fontSize: 18,
-                fontWeight: FontWeight.w700)),
-      ),
-      body: Column(
-        children: [
-          _buildStepper(2),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                const Text('Méthode de paiement',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark)),
-                const SizedBox(height: 4),
-                const Text('Choisissez votre moyen de paiement mobile money',
-                    style: TextStyle(
-                        fontSize: 13, color: AppColors.textGrey)),
-                const SizedBox(height: 16),
-                ..._methods.asMap().entries.map((entry) {
-                  final i = entry.key;
-                  final method = entry.value;
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back, color: AppColors.navyDark),
+                  ),
+                  const Text(
+                    'Choisir le mode de paiement',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.navyDark),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                itemCount: _methods.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 14),
+                itemBuilder: (context, index) {
+                  final method = _methods[index];
+                  final isSelected = _selectedMethod == index;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedPayment = i),
+                    onTap: () => setState(() => _selectedMethod = index),
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
+                        color: AppColors.whiteMuted,
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: _selectedPayment == i
-                              ? AppColors.orangeDark
-                              : const Color(0xFFEEEEEE),
-                          width: _selectedPayment == i ? 2 : 1,
+                          color: isSelected ? AppColors.orangeDark : Colors.grey.shade200,
+                          width: isSelected ? 1.5 : 1,
                         ),
-                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
@@ -87,115 +70,75 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              color: (method['color'] as Color)
-                                  .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(method['icon'] as IconData,
-                                color: method['color'] as Color),
+                            padding: const EdgeInsets.all(8),
+                            child: Image.asset(
+                              method['logo']!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.account_balance_wallet_outlined, color: AppColors.orangeDark),
+                            ),
                           ),
-                          const SizedBox(width: 16),
-                          Text(method['name'] as String,
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textDark)),
-                          const Spacer(),
-                          Radio<int>(
-                            value: i,
-                            groupValue: _selectedPayment,
-                            activeColor: AppColors.orangeDark,
-                            onChanged: (val) =>
-                                setState(() => _selectedPayment = val!),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  method['name']!,
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.navyDark),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  method['desc']!,
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                            color: isSelected ? AppColors.orangeDark : Colors.grey,
                           ),
                         ],
                       ),
                     ),
                   );
-                }),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const ConfirmationScreen()),
-                  );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.orangeDark,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text('Continuer',
-                    style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600)),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildStepper(int currentStep) {
-    final steps = ['Livraison', 'Paiement', 'Confirmation'];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: List.generate(steps.length, (i) {
-          final isActive = i + 1 == currentStep;
-          final isDone = i + 1 < currentStep;
-          return Expanded(
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 14,
-                  backgroundColor: isActive || isDone
-                      ? AppColors.orangeDark
-                      : const Color(0xFFEEEEEE),
-                  child: Text('${i + 1}',
-                      style: TextStyle(
-                          color: isActive || isDone
-                              ? AppColors.white
-                              : AppColors.textGrey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700)),
-                ),
-                const SizedBox(width: 6),
-                Text(steps[i],
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: isActive || isDone
-                            ? AppColors.orangeDark
-                            : AppColors.textGrey,
-                        fontWeight: isActive
-                            ? FontWeight.w700
-                            : FontWeight.normal)),
-                if (i < steps.length - 1)
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      color: isDone
-                          ? AppColors.orangeDark
-                          : const Color(0xFFEEEEEE),
-                    ),
-                  ),
-              ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.lock_outline, size: 16, color: AppColors.textGrey),
+                  const SizedBox(width: 6),
+                  const Text('Paiement 100% sécurisé', style: TextStyle(fontSize: 12, color: AppColors.textGrey)),
+                ],
+              ),
             ),
-          );
-        }),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: ElevatedButton(
+                onPressed: _payer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.orangeDark,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  minimumSize: const Size(double.infinity, 0),
+                ),
+                child: const Text(
+                  'Payer maintenant',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

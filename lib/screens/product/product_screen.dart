@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
 class ProductScreen extends StatefulWidget {
-  const ProductScreen({super.key});
+  final String? name;
+  final String? price;
+  final String? oldPrice;
+  final String? discount;
+
+  const ProductScreen({
+    super.key,
+    this.name,
+    this.price,
+    this.oldPrice,
+    this.discount,
+  });
 
   @override
   State<ProductScreen> createState() => _ProductScreenState();
@@ -73,7 +84,7 @@ class _ProductScreenState extends State<ProductScreen> {
                     child: Icon(
                       Icons.smartphone,
                       size: 140,
-                      color: navy.withOpacity(0.7),
+                      color: navy.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
@@ -341,7 +352,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 12,
                     offset: const Offset(0, -4),
                   ),
@@ -428,7 +439,7 @@ class _ProductScreenState extends State<ProductScreen> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
             ),
           ],
