@@ -75,7 +75,13 @@ class ConfirmationScreen extends StatelessWidget {
                       width: double.infinity,
                       height: 54,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/profile',
+                            (route) => false,
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.orangeDark,
                           shape: RoundedRectangleBorder(

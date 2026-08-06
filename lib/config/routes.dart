@@ -8,6 +8,8 @@ import '../screens/catalog/catalog_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
+import '../screens/tracking/order_tracking_screen.dart';
+import '../screens/favorites_screen.dart';
 
 class AppRoutes {
   static Map<String, WidgetBuilder> routes = {
@@ -19,5 +21,7 @@ class AppRoutes {
     '/catalog': (context) => const CatalogScreen(),
     '/cart': (context) => const CartScreen(),
     '/profile': (context) => const ProfileScreen(),
+    '/tracking': (context) => const OrderTrackingScreen(),
+    '/favorites': (context) => const FavoritesScreen(),
   };
 }
