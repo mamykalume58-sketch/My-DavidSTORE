@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'product/product_screen.dart';
+import '../models/product.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String categoryName;
@@ -99,11 +100,15 @@ class CategoryScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ProductScreen(
-                          name: item.$1,
-                          price: '${item.$2} FC',
-                          oldPrice: '${item.$3} FC',
-                          discount: item.$4,
+                        builder: (_) => const ProductScreen(),
+                        settings: RouteSettings(
+                          arguments: Product(
+                            id: index.toString(),
+                            name: item.$1,
+                            price: item.$2,
+                            emoji: "📦",
+                            category: categoryName,
+                          ),
                         ),
                       ),
                     );

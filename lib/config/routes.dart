@@ -10,7 +10,12 @@ import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/tracking/order_tracking_screen.dart';
 import '../screens/favorites_screen.dart';
-
+import '../screens/product/product_screen.dart';
+import '../screens/checkout/checkout_screen.dart';
+import '../screens/payment_screen.dart';
+import '../screens/delivery_screen.dart';
+import '../screens/confirmation_screen.dart';
+import '../screens/account_screen.dart';
 class AppRoutes {
   static Map<String, WidgetBuilder> routes = {
     '/': (context) => const SplashScreen(),
@@ -23,5 +28,11 @@ class AppRoutes {
     '/profile': (context) => const ProfileScreen(),
     '/tracking': (context) => const OrderTrackingScreen(),
     '/favorites': (context) => const FavoritesScreen(),
+    '/product': (context) => const ProductScreen(),
+    '/checkout': (context) => const CheckoutScreen(),
+    '/payment': (context) => const PaymentScreen(),
+    '/delivery': (context) => const DeliveryScreen(),
+    '/confirmation': (context) => const ConfirmationScreen(),
+    '/account': (context) => const AccountScreen(),
   };
 }

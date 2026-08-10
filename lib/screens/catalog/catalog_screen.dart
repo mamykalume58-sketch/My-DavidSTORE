@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../models/product.dart';
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -13,18 +14,18 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   static const List<String> _categories = ['Tout', 'Téléphones', 'Mode', 'Électronique', 'Maison'];
 
-  static const List<Map<String, String>> _products = [
-    {'name': 'iPhone 14 Pro', 'price': '1 250 000 FC', 'emoji': '📱', 'category': 'Téléphones'},
-    {'name': 'Samsung A54', 'price': '620 000 FC', 'emoji': '📱', 'category': 'Téléphones'},
-    {'name': 'AirPods Pro', 'price': '330 000 FC', 'emoji': '🎧', 'category': 'Électronique'},
-    {'name': 'Smart Watch S7', 'price': '210 000 FC', 'emoji': '⌚', 'category': 'Électronique'},
-    {'name': 'Sac à dos', 'price': '45 000 FC', 'emoji': '🎒', 'category': 'Mode'},
-    {'name': 'Chaussures Nike', 'price': '130 000 FC', 'emoji': '👟', 'category': 'Mode'},
+  static const List<Product> _products = [
+    Product(id: 'iphone14pro', name: 'iPhone 14 Pro', price: 1250000, emoji: '📱', category: 'Téléphones'),
+    Product(id: 'samsunga54', name: 'Samsung A54', price: 620000, emoji: '📱', category: 'Téléphones'),
+    Product(id: 'airpodspro', name: 'AirPods Pro', price: 330000, emoji: '🎧', category: 'Électronique'),
+    Product(id: 'smartwatchs7', name: 'Smart Watch S7', price: 210000, emoji: '⌚', category: 'Électronique'),
+    Product(id: 'sacados', name: 'Sac à dos', price: 45000, emoji: '🎒', category: 'Mode'),
+    Product(id: 'chaussuresnike', name: 'Chaussures Nike', price: 130000, emoji: '👟', category: 'Mode'),
   ];
 
-  List<Map<String, String>> get _filteredProducts {
+  List<Product> get _filteredProducts {
     if (_selectedCategory == 'Tout') return _products;
-    return _products.where((p) => p['category'] == _selectedCategory).toList();
+    return _products.where((p) => p.category == _selectedCategory).toList();
   }
 
   @override
@@ -160,7 +161,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 itemBuilder: (context, index) {
                   final product = _filteredProducts[index];
                   return GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/product'),
+                    onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.whiteMuted,
@@ -173,18 +174,18 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         children: [
                           Expanded(
                             child: Center(
-                              child: Text(product['emoji']!, style: const TextStyle(fontSize: 44)),
+                              child: Text(product.emoji, style: const TextStyle(fontSize: 44)),
                             ),
                           ),
                           Text(
-                            product['name']!,
+                            product.name,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            product['price']!,
+                            product.priceDisplay,
                             style: const TextStyle(fontSize: 13, color: AppColors.orangeDark, fontWeight: FontWeight.bold),
                           ),
                         ],
