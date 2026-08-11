@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'product/product_screen.dart';
 import '../models/product.dart';
+import '../utils/price_formatter.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String categoryName;
@@ -68,11 +69,14 @@ class CategoryScreen extends StatelessWidget {
           }
 
           final docs = snapshot.data?.docs ?? [];
-          final products = docs.map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id;
-            return Product.fromMap(data);
-          }).toList();
+          final products = docs
+              .map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                data['id'] = doc.id;
+                return Product.fromMap(data);
+              })
+              .where((p) => p.active)
+              .toList();
 
           if (products.isEmpty) {
             return const Center(
@@ -152,11 +156,35 @@ class CategoryScreen extends StatelessWidget {
                                           color: AppColors.textDark,
                                           fontWeight: FontWeight.w500)),
                                   const SizedBox(height: 6),
-                                  Text(product.priceDisplay,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.orangeDark)),
+                                  Row(
+                                    children: [
+                                      Text(product.priceDisplay,
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.orangeDark)),
+                                      if (product.hasPromo) ...[
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          formatPriceStrike(product.price),
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.textGrey,
+                                              decoration:
+                                                  TextDecoration.lineThrough),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  if (!product.inStock)
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 4),
+                                      child: Text('Rupture de stock',
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.w600)),
+                                    ),
                                 ],
                               ),
                             ),
