@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/product.dart';
 import '../../services/cart_service.dart';
 import '../../services/favorites_service.dart';
@@ -65,6 +66,45 @@ class _HomeScreenState extends State<HomeScreen> {
     _favoritesService.toggleFavorite(userId, product);
   }
 
+  void _showSupportOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.smart_toy_outlined, color: Colors.orange),
+                title: const Text('Parler à Nicole'),
+                subtitle: const Text('Assistante virtuelle DavidSTORE'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.pushNamed(context, '/support-chat');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.chat, color: Colors.green),
+                title: const Text('Support WhatsApp'),
+                subtitle: const Text('Parler à un humain'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final uri = Uri.parse('https://wa.me/243852849473');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -93,6 +133,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.support_agent, color: Color(0xFF475569)),
+            onPressed: () => _showSupportOptions(context),
+          ),
           IconButton(
             icon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569)),
             onPressed: () => Navigator.pushNamed(context, '/cart'),

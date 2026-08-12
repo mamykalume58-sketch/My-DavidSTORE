@@ -48,3 +48,6 @@ serviceAccountKey.json
 node_modules/
 .env
 scripts/serviceAccountKey.json
+.vercel
+.env*
+.git-credentials-flutter

@@ -16,6 +16,7 @@ import '../screens/payment_screen.dart';
 import '../screens/delivery_screen.dart';
 import '../screens/confirmation_screen.dart';
 import '../screens/account_screen.dart';
+import '../screens/support/support_chat_screen.dart';
 class AppRoutes {
   static Map<String, WidgetBuilder> routes = {
     '/': (context) => const SplashScreen(),
@@ -34,5 +35,6 @@ class AppRoutes {
     '/delivery': (context) => const DeliveryScreen(),
     '/confirmation': (context) => const ConfirmationScreen(),
     '/account': (context) => const AccountScreen(),
+    '/support-chat': (context) => const SupportChatScreen(),
   };
 }
