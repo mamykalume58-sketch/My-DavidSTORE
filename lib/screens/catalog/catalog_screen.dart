@@ -27,7 +27,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
-  final List<String> _categories = ['Tous', 'Téléphones', 'Mode', 'Électronique', 'Maison'];
+  final List<String> _categories = ['Tous', 'Ordinateurs', 'Téléphones', 'Mode', 'Électronique', 'Maison'];
 
   @override
   void didChangeDependencies() {

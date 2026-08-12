@@ -6,7 +6,7 @@ import '../../models/product.dart';
 import '../../services/cart_service.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/product_card.dart';
-import '../../widgets/category_chip.dart';
+import '../../widgets/home_category_card.dart';
 import '../../widgets/promo_banner.dart';
 import '../../widgets/custom_bottom_nav_bar.dart';
 import '../../widgets/app_drawer.dart';
@@ -26,12 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
-  static const List<Map<String, String>> _categories = [
-    {'label': 'Tous', 'icon': '🛍️'},
-    {'label': 'Téléphones', 'icon': '📱'},
-    {'label': 'Mode', 'icon': '👕'},
-    {'label': 'Électronique', 'icon': '🔌'},
-    {'label': 'Maison', 'icon': '🏠'},
+  static const List<Map<String, dynamic>> _categories = [
+    {'label': 'Ordinateurs', 'icon': Icons.laptop_mac},
+    {'label': 'Téléphones', 'icon': Icons.smartphone},
+    {'label': 'Mode', 'icon': Icons.checkroom},
+    {'label': 'Électronique', 'icon': Icons.cable},
+    {'label': 'Maison', 'icon': Icons.home_outlined},
+    {'label': 'Plus', 'icon': Icons.more_horiz},
   ];
 
   void _addToCart(Product product) {
@@ -192,48 +193,56 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Catégories', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/catalog'),
-                          child: Text('Voir tout', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.primaryColor)),
-                        ),
-                      ],
-                    ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                child: Text('Catégories', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+              ),
+            ),
+
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _categories.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.0,
                   ),
-                  SizedBox(
-                    height: 42,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        final cat = _categories[index];
-                        final isSelected = cat['label'] == _selectedCategory;
-                        return CategoryChip(
-                          label: cat['label']!,
-                          emoji: cat['icon']!,
-                          isSelected: isSelected,
-                          onTap: () => setState(() => _selectedCategory = cat['label']!),
-                        );
+                  itemBuilder: (context, index) {
+                    final cat = _categories[index];
+                    return HomeCategoryCard(
+                      label: cat['label'] as String,
+                      icon: cat['icon'] as IconData,
+                      onTap: () {
+                        if (cat['label'] == 'Plus') {
+                          Navigator.pushNamed(context, '/catalog');
+                        } else {
+                          Navigator.pushNamed(context, '/catalog', arguments: cat['label']);
+                        }
                       },
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
             ),
 
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-                child: Text('Produits', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Produits populaires', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/catalog'),
+                      child: Text('Voir plus', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.primaryColor)),
+                    ),
+                  ],
+                ),
               ),
             ),
 
