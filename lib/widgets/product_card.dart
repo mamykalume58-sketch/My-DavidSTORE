@@ -153,16 +153,33 @@ class ProductCard extends StatelessWidget {
                             ),
                         ],
                       ),
-                      InkWell(
-                        onTap: product.inStock ? onAddToCart : null,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: product.inStock ? theme.primaryColor : Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            onTap: onTap,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: theme.primaryColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text('Voir', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: theme.primaryColor)),
+                            ),
                           ),
-                          child: const Icon(Icons.add_shopping_cart, size: 16, color: Colors.white),
-                        ),
+                          const SizedBox(width: 6),
+                          InkWell(
+                            onTap: product.inStock ? onAddToCart : null,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: product.inStock ? theme.primaryColor : Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.add_shopping_cart, size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
