@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../utils/price_formatter.dart';
@@ -17,6 +18,36 @@ class ProductCard extends StatelessWidget {
     required this.onFavoriteToggle,
     this.isFavorite = false,
   });
+
+  Widget _buildProductImage(String source, String fallbackEmoji) {
+    try {
+      if (source.startsWith('data:image')) {
+        final base64Str = source.split(',').last;
+        return Image.memory(
+          base64Decode(base64Str),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Text(fallbackEmoji, style: const TextStyle(fontSize: 40)),
+        );
+      } else if (source.startsWith('http')) {
+        return Image.network(
+          source,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Text(fallbackEmoji, style: const TextStyle(fontSize: 40)),
+        );
+      } else {
+        return Image.memory(
+          base64Decode(source),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Text(fallbackEmoji, style: const TextStyle(fontSize: 40)),
+        );
+      }
+    } catch (_) {
+      return Text(fallbackEmoji, style: const TextStyle(fontSize: 40));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,12 +80,7 @@ class ProductCard extends StatelessWidget {
                       color: Colors.grey.shade100,
                       alignment: Alignment.center,
                       child: product.images.isNotEmpty
-                          ? Image.network(
-                              product.images.first,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  Text(product.emoji, style: const TextStyle(fontSize: 40)),
-                            )
+                          ? _buildProductImage(product.images.first, product.emoji)
                           : Text(product.emoji, style: const TextStyle(fontSize: 40)),
                     ),
                   ),
