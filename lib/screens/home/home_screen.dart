@@ -20,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategory = 'Tous';
+  String _searchQuery = '';
   final CartService _cartService = CartService();
   final FavoritesService _favoritesService = FavoritesService();
 
@@ -165,13 +166,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, color: Colors.grey.shade400, size: 20),
-                      const SizedBox(width: 10),
-                      Text('Rechercher un produit...', style: TextStyle(color: Colors.grey.shade400, fontSize: 13)),
-                    ],
-                  ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.grey.shade400, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (value) => setState(() => _searchQuery = value),
+                            decoration: InputDecoration(
+                              hintText: 'Rechercher un produit...',
+                              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                 ),
               ),
             ),
@@ -245,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final data = doc.data() as Map<String, dynamic>;
                   data['id'] = doc.id;
                   return Product.fromMap(data);
-                }).where((p) => p.active).toList();
+                }).where((p) => p.active && (_searchQuery.isEmpty || p.name.toLowerCase().contains(_searchQuery.toLowerCase()))).toList();
 
                 if (products.isEmpty) {
                   return const SliverToBoxAdapter(
