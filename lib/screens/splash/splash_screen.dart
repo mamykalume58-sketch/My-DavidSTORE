@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/session_service.dart';
 
@@ -25,8 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final hasSeenOnboarding =
         await SessionService.hasSeenOnboarding();
 
-    final isLoggedIn =
-        await SessionService.isLoggedIn();
+    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     if (!mounted) return;
 

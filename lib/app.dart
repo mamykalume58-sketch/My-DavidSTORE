@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'screens/splash/splash_screen.dart';
 
 import 'config/routes.dart';
 import 'config/theme.dart';
@@ -14,7 +15,7 @@ class DavidStoreApp extends StatelessWidget {
       title: 'DavidSTORE',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const _AuthGate(),
+      home: const SplashScreen(),
       routes: AppRoutes.routes,
       onGenerateRoute: (settings) {
         if (settings.name == '/category') {
