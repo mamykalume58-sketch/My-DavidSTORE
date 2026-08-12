@@ -15,9 +15,12 @@ class CustomBottomNavBar extends StatelessWidget {
         Navigator.pushNamed(context, '/catalog');
         break;
       case 2:
-        Navigator.pushNamed(context, '/tracking');
+        Navigator.pushNamed(context, '/favorites');
         break;
       case 3:
+        Navigator.pushNamed(context, '/tracking');
+        break;
+      case 4:
         Navigator.pushNamed(context, '/profile');
         break;
     }
@@ -42,9 +45,10 @@ class CustomBottomNavBar extends StatelessWidget {
         unselectedFontSize: 11,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Accueil'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Catalogue'),
-          BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined), label: 'Suivi'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profil'),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: 'Catégories'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Favoris'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'Commandes'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Compte'),
         ],
       ),
     );

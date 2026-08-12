@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../models/product.dart';
 import '../services/favorites_service.dart';
 import '../utils/price_formatter.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -111,6 +112,7 @@ class FavoritesScreen extends StatelessWidget {
                 );
               },
             ),
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
     );
   }
 
