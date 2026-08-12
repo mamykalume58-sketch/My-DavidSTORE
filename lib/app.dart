@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'config/routes.dart';
@@ -13,16 +14,44 @@ class DavidStoreApp extends StatelessWidget {
       title: 'DavidSTORE',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: '/',
+      home: const _AuthGate(),
       routes: AppRoutes.routes,
       onGenerateRoute: (settings) {
         if (settings.name == '/category') {
           final categoryName = settings.arguments?.toString() ?? '';
+
           return MaterialPageRoute(
             builder: (_) => CategoryScreen(categoryName: categoryName),
           );
         }
+
         return null;
+      },
+    );
+  }
+}
+
+class _AuthGate extends StatelessWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (snapshot.hasData) {
+          return AppRoutes.routes['/']!(context);
+        }
+
+        return AppRoutes.routes['/login']!(context);
       },
     );
   }
