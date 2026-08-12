@@ -9,6 +9,7 @@ import '../../widgets/product_card.dart';
 import '../../widgets/category_chip.dart';
 import '../../widgets/promo_banner.dart';
 import '../../widgets/custom_bottom_nav_bar.dart';
+import '../../widgets/app_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -116,8 +117,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
+      drawer: const AppDrawer(),
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Color(0xFF475569)),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         title: Row(
