@@ -135,48 +135,43 @@ class CatalogProductCard extends StatelessWidget {
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(product.priceDisplay, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: primaryColor)),
-                          if (product.hasPromo)
-                            Text(
-                              formatPriceStrike(product.price),
-                              style: const TextStyle(fontSize: 9, decoration: TextDecoration.lineThrough, color: Colors.grey),
-                            ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          InkWell(
-                            onTap: onTap,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: primaryColor),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text('Voir', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
-                            ),
+                      Text(product.priceDisplay, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: primaryColor)),
+                      if (product.hasPromo)
+                        Text(
+                          formatPriceStrike(product.price),
+                          style: const TextStyle(fontSize: 9, decoration: TextDecoration.lineThrough, color: Colors.grey),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: onTap,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: primaryColor),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          const SizedBox(width: 6),
-                          InkWell(
-                            onTap: product.inStock ? onAddToCart : null,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: product.inStock ? primaryColor : Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(Icons.add_shopping_cart_rounded, size: 16, color: Colors.white),
-                            ),
-                          ),
-                        ],
+                          child: Text('Voir', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
+                        ),
                       ),
+                      const SizedBox(width: 6),
+                      InkWell(
+                        onTap: product.inStock ? onAddToCart : null,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: product.inStock ? primaryColor : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.add_shopping_cart_rounded, size: 16, color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
