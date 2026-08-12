@@ -25,7 +25,7 @@ class AppRoutes {
     '/register': (context) => const RegisterScreen(),
     '/home': (context) => const HomeScreen(),
     '/catalog': (context) => const CatalogScreen(),
-    '/cart': (context) => const CartScreen(),
+    '/cart': (context) => CartScreen(),
     '/profile': (context) => const ProfileScreen(),
     '/tracking': (context) => const OrderTrackingScreen(),
     '/favorites': (context) => const FavoritesScreen(),
