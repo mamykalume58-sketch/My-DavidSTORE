@@ -132,6 +132,36 @@ app.get('/api/shwary/status/:transactionId', async (req, res) => {
   }
 });
 
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+app.post('/api/support-chat', async (req, res) => {
+  try {
+    const { message, history } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'message est requis' });
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: "Tu es l'assistant du support client de DAVIDSTORE, une boutique en ligne. Réponds en français, de façon brève, polie et utile. Si tu ne peux pas résoudre le problème, invite le client à contacter le support humain via WhatsApp.",
+    });
+
+    const chat = model.startChat({
+      history: Array.isArray(history) ? history : [],
+    });
+
+    const result = await chat.sendMessage(message);
+    const reply = result.response.text();
+
+    res.json({ reply });
+  } catch (error) {
+    console.error('Erreur chat support:', error);
+    res.status(500).json({ error: "Erreur lors de la génération de la réponse" });
+  }
+});
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
