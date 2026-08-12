@@ -144,7 +144,7 @@ app.post('/api/support-chat', async (req, res) => {
     }
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       systemInstruction: "Tu es l'assistant du support client de DAVIDSTORE, une boutique en ligne. Réponds en français, de façon brève, polie et utile. Si tu ne peux pas résoudre le problème, invite le client à contacter le support humain via WhatsApp.",
     });
 
