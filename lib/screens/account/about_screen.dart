@@ -55,6 +55,13 @@ class AboutScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.campaign_outlined, color: Color(0xFF64748B)),
+                  title: const Text('Quoi de neuf ?', style: TextStyle(fontSize: 14)),
+                  trailing: const Icon(Icons.chevron_right, size: 20),
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                ListTile(
                   leading: const Icon(Icons.description_outlined, color: Color(0xFF64748B)),
                   title: const Text('Politique de confidentialité', style: TextStyle(fontSize: 14)),
                   trailing: const Icon(Icons.chevron_right, size: 20),
@@ -64,6 +71,13 @@ class AboutScreen extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.gavel_outlined, color: Color(0xFF64748B)),
                   title: const Text("Conditions d'utilisation", style: TextStyle(fontSize: 14)),
+                  trailing: const Icon(Icons.chevron_right, size: 20),
+                  onTap: () => Navigator.pushNamed(context, '/account/privacy-policy'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.balance_outlined, color: Color(0xFF64748B)),
+                  title: const Text('Mentions légales', style: TextStyle(fontSize: 14)),
                   trailing: const Icon(Icons.chevron_right, size: 20),
                   onTap: () {},
                 ),

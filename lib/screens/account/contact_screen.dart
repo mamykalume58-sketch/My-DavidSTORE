@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ContactScreen extends StatelessWidget {
   const ContactScreen({super.key});
+
+  Future<void> _launch(Uri uri) async {
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +49,24 @@ class ContactScreen extends StatelessWidget {
             child: ListTile(
               leading: const Icon(Icons.phone_outlined, color: Color(0xFF25D366)),
               title: const Text('WhatsApp', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: const Text('+242 0852849473', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              subtitle: const Text('+243 81 234 5678', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
               trailing: const Icon(Icons.chevron_right, size: 20),
-              onTap: () {},
+              onTap: () => _launch(Uri.parse('https://wa.me/243812345678')),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.email_outlined, color: Color(0xFF0F172A)),
+              title: const Text('Email', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              subtitle: const Text('davstore4@gmail.com', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              trailing: const Icon(Icons.chevron_right, size: 20),
+              onTap: () => _launch(Uri(scheme: 'mailto', path: 'davstore4@gmail.com')),
             ),
           ),
           Container(
@@ -53,10 +75,12 @@ class ContactScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: const ListTile(
-              leading: Icon(Icons.email_outlined, color: Color(0xFF0F172A)),
-              title: Text('Email', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: Text('davstore4@gmail.com', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            child: ListTile(
+              leading: const Icon(Icons.call_outlined, color: Color(0xFF0F172A)),
+              title: const Text('Téléphone', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              subtitle: const Text('+243 81 234 5678', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              trailing: const Icon(Icons.chevron_right, size: 20),
+              onTap: () => _launch(Uri(scheme: 'tel', path: '+243812345678')),
             ),
           ),
         ],
