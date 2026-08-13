@@ -9,6 +9,7 @@ import '../screens/home/home_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/tracking/order_tracking_screen.dart';
+import '../screens/orders/orders_list_screen.dart';
 import '../screens/favorites_screen.dart';
 import '../screens/product/product_screen.dart';
 import '../screens/checkout/checkout_screen.dart';
@@ -49,7 +50,8 @@ class AppRoutes {
     '/catalog': (context) => const CatalogScreen(),
     '/cart': (context) => CartScreen(),
     '/profile': (context) => const ProfileScreen(),
-    '/tracking': (context) => const OrderTrackingScreen(),
+    '/tracking': (context) => const OrdersListScreen(),
+    '/order-detail': (context) => const OrderTrackingScreen(),
     '/favorites': (context) => const FavoritesScreen(),
     '/product': (context) => const ProductScreen(),
     '/checkout': (context) => const CheckoutScreen(),
