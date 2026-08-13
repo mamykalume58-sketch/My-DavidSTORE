@@ -27,12 +27,12 @@ class FavoritesService {
     } else {
       await docRef.set({
         'productId': product.id,
-        'name': product.name,
-        'price': product.price,
-        'emoji': product.emoji,
-        'image': product.images.isNotEmpty ? product.images.first : '',
         'addedAt': FieldValue.serverTimestamp(),
       });
     }
+  }
+
+  Future<void> removeFavorite(String userId, String productId) async {
+    await _favRef(userId).doc(productId).delete();
   }
 }
