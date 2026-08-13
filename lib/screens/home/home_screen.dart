@@ -130,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         elevation: 0,
         backgroundColor: Colors.white,
+        centerTitle: true,
         title: Text.rich(
           TextSpan(
             children: [
