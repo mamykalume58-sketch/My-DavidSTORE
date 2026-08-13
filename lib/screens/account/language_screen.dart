@@ -12,9 +12,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
 
   final List<Map<String, String>> _languages = const [
     {'code': 'fr', 'label': 'Français'},
-    {'code': 'en', 'label': 'Anglais'},
-    {'code': 'ln', 'label': 'Lingala'},
-    {'code': 'sw', 'label': 'Swahili'},
+    {'code': 'en', 'label': 'English'},
+    {'code': 'sw', 'label': 'Kiswahili'},
   ];
 
   @override
