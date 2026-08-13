@@ -27,17 +27,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
-  final List<String> _categories = ['Tous', 'Ordinateurs', 'Téléphones', 'Mode', 'Électronique', 'Maison'];
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_isInit) {
       final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is String && _categories.contains(args)) {
+      if (args is String) {
         _selectedCategory = args;
       } else if (args is Map) {
-        if (args['category'] != null && _categories.contains(args['category'])) {
+        if (args['category'] != null) {
           _selectedCategory = args['category'];
         }
         if (args['search'] != null) {
@@ -185,42 +183,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 ],
               ),
             ),
-            Container(
-              color: Colors.white,
-              height: 46,
-              padding: const EdgeInsets.only(bottom: 8),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final cat = _categories[index];
-                  final isSelected = cat == _selectedCategory;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(cat),
-                      selected: isSelected,
-                      selectedColor: primaryColor,
-                      backgroundColor: const Color(0xFFF1F5F9),
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : const Color(0xFF475569),
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        fontSize: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(color: isSelected ? primaryColor : Colors.transparent),
-                      ),
-                      onSelected: (selected) {
-                        if (selected) setState(() => _selectedCategory = cat);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            const Divider(height: 1, color: Color(0xFFE2E8F0)),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('products').snapshots(),
@@ -239,50 +201,99 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     return Product.fromMap(data);
                   }).toList();
 
+                  final availableCategories = rawProducts
+                      .where((p) => p.active)
+                      .map((p) => p.category)
+                      .where((c) => c.isNotEmpty)
+                      .toSet()
+                      .toList()
+                    ..sort();
+                  final categories = ['Tous', ...availableCategories];
+
                   final filteredProducts = _filterAndSortProducts(rawProducts);
 
-                  if (filteredProducts.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search_off_rounded, size: 60, color: Colors.grey.shade300),
-                          const SizedBox(height: 12),
-                          const Text('Aucun produit trouvé', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
-                          const SizedBox(height: 4),
-                          Text('Essayez de modifier votre recherche ou filtre.', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.68, crossAxisSpacing: 12, mainAxisSpacing: 12),
-                    itemCount: filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = filteredProducts[index];
-                      return userId == null
-                          ? CatalogProductCard(
-                              product: product,
-                              isFavorite: false,
-                              onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
-                              onToggleFavorite: () => _toggleFavorite(product),
-                              onAddToCart: () => _addToCart(product),
-                            )
-                          : StreamBuilder<bool>(
-                              stream: _favoritesService.isFavorite(userId, product.id),
-                              builder: (context, favSnapshot) {
-                                return CatalogProductCard(
-                                  product: product,
-                                  isFavorite: favSnapshot.data ?? false,
-                                  onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
-                                  onToggleFavorite: () => _toggleFavorite(product),
-                                  onAddToCart: () => _addToCart(product),
-                                );
-                              },
+                  return Column(
+                    children: [
+                      Container(
+                        color: Colors.white,
+                        height: 46,
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: categories.length,
+                          itemBuilder: (context, index) {
+                            final cat = categories[index];
+                            final isSelected = cat == _selectedCategory;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(cat),
+                                selected: isSelected,
+                                selectedColor: primaryColor,
+                                backgroundColor: const Color(0xFFF1F5F9),
+                                labelStyle: TextStyle(
+                                  color: isSelected ? Colors.white : const Color(0xFF475569),
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  fontSize: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(color: isSelected ? primaryColor : Colors.transparent),
+                                ),
+                                onSelected: (selected) {
+                                  if (selected) setState(() => _selectedCategory = cat);
+                                },
+                              ),
                             );
-                    },
+                          },
+                        ),
+                      ),
+                      const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                      Expanded(
+                        child: filteredProducts.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.search_off_rounded, size: 60, color: Colors.grey.shade300),
+                                    const SizedBox(height: 12),
+                                    const Text('Aucun produit trouvé', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                                    const SizedBox(height: 4),
+                                    Text('Essayez de modifier votre recherche ou filtre.', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+                                  ],
+                                ),
+                              )
+                            : GridView.builder(
+                                padding: const EdgeInsets.all(16),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.68, crossAxisSpacing: 12, mainAxisSpacing: 12),
+                                itemCount: filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = filteredProducts[index];
+                                  return userId == null
+                                      ? CatalogProductCard(
+                                          product: product,
+                                          isFavorite: false,
+                                          onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
+                                          onToggleFavorite: () => _toggleFavorite(product),
+                                          onAddToCart: () => _addToCart(product),
+                                        )
+                                      : StreamBuilder<bool>(
+                                          stream: _favoritesService.isFavorite(userId, product.id),
+                                          builder: (context, favSnapshot) {
+                                            return CatalogProductCard(
+                                              product: product,
+                                              isFavorite: favSnapshot.data ?? false,
+                                              onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
+                                              onToggleFavorite: () => _toggleFavorite(product),
+                                              onAddToCart: () => _addToCart(product),
+                                            );
+                                          },
+                                        );
+                                },
+                              ),
+                      ),
+                    ],
                   );
                 },
               ),

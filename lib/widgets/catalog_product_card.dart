@@ -84,26 +84,27 @@ class CatalogProductCard extends StatelessWidget {
                           : Text(product.emoji, style: const TextStyle(fontSize: 36)),
                     ),
                   ),
-                  if (product.hasPromo)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(color: Colors.red.shade600, borderRadius: BorderRadius.circular(6)),
-                        child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                      ),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!product.inStock)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(color: Colors.grey.shade700, borderRadius: BorderRadius.circular(6)),
+                            child: const Text('RUPTURE', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                          ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(color: Colors.red.shade600, borderRadius: BorderRadius.circular(6)),
+                          child: Text(product.category.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
-                  if (!product.inStock)
-                    Positioned(
-                      top: product.hasPromo ? 30 : 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(color: Colors.grey.shade700, borderRadius: BorderRadius.circular(6)),
-                        child: const Text('RUPTURE', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
+                  ),
                   Positioned(
                     top: 8,
                     right: 8,
