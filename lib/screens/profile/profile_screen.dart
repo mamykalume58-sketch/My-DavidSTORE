@@ -200,16 +200,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCouponsStat(ThemeData theme, BuildContext context) {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: CouponService().watchAvailableCoupons(),
-      builder: (context, snapshot) {
-        final count = snapshot.data?.length ?? 0;
-        return _buildStat(Icons.local_activity_outlined, Colors.orange, '$count', 'Coupons', () => Navigator.pushNamed(context, '/account/coupons'));
-      },
-    );
-  }
-
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),

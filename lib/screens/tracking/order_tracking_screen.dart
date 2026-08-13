@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/custom_bottom_nav_bar.dart';
 
 class TrackingStep {
   final String title;
@@ -160,6 +161,7 @@ class OrderTrackingScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
     );
   }
 }
