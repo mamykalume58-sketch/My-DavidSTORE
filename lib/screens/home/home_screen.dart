@@ -130,23 +130,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: theme.primaryColor, borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.storefront, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 8),
-            const Text('DAVIDSTORE',
-                style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5)),
-          ],
+        title: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'DAVID',
+                style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5),
+              ),
+              TextSpan(
+                text: 'STORE',
+                style: TextStyle(color: Color(0xFFEA6A2E), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5),
+              ),
+            ],
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.support_agent, color: Color(0xFF475569)),
-            onPressed: () => _showSupportOptions(context),
-          ),
           IconButton(
             icon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569)),
             onPressed: () => Navigator.pushNamed(context, '/cart'),
