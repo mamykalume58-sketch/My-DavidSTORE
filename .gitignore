@@ -54,3 +54,10 @@ scripts/serviceAccountKey.json
 *.bak
 linux/flutter/ephemeral/
 macos/Flutter/ephemeral/
+
+# Generated Flutter desktop files (linux/macos not used, kept auto-generated only)
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugins.cmake
+linux/flutter/ephemeral/
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Flutter/ephemeral/
