@@ -3,22 +3,42 @@ import 'package:flutter/material.dart';
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
-  static const List<Map<String, String>> _faqs = [
+  static const List<Map<String, dynamic>> _categories = [
     {
-      'question': 'Comment suivre ma commande ?',
-      'answer': "Rends-toi dans l'onglet Suivi depuis le menu principal pour voir le statut en temps réel de ta commande.",
+      'icon': Icons.help_outline,
+      'title': 'FAQ',
+      'subtitle': 'Questions fréquentes',
+      'route': '/account/faq',
     },
     {
-      'question': 'Quels moyens de paiement acceptez-vous ?',
-      'answer': 'Nous acceptons Airtel Money, M-Pesa et Orange Money.',
+      'icon': Icons.menu_book_outlined,
+      'title': 'Guides et tutoriels',
+      'subtitle': "Apprends à utiliser l'application",
+      'route': '/account/guides',
     },
     {
-      'question': 'Comment retourner un article ?',
-      'answer': "Contacte notre support via WhatsApp ou l'assistante Nicole pour lancer une demande de retour.",
+      'icon': Icons.local_shipping_outlined,
+      'title': 'Livraison',
+      'subtitle': 'Tout sur la livraison',
+      'route': '/account/shipping-info',
     },
     {
-      'question': 'Combien de temps prend la livraison ?',
-      'answer': 'Le délai de livraison varie selon ta localisation, généralement entre 1 et 5 jours ouvrés.',
+      'icon': Icons.payment_outlined,
+      'title': 'Paiement',
+      'subtitle': 'Moyens et sécurité',
+      'route': '/account/payment-info',
+    },
+    {
+      'icon': Icons.assignment_return_outlined,
+      'title': 'Retour et remboursement',
+      'subtitle': 'Politique de retour',
+      'route': '/account/returns-info',
+    },
+    {
+      'icon': Icons.support_agent_outlined,
+      'title': 'Nous contacter',
+      'subtitle': 'Par email, téléphone ou chat',
+      'route': '/account/contact',
     },
   ];
 
@@ -33,55 +53,23 @@ class HelpScreen extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8, left: 4),
-            child: Text('Questions fréquentes', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
-          ),
-          ..._faqs.map((faq) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: ExpansionTile(
-                title: Text(faq['question']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(faq['answer']!, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
-                ],
-              ),
-            );
-          }),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(16),
+        children: _categories.map((cat) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Besoin de plus d\'aide ?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
-                const SizedBox(height: 8),
-                const Text('Notre équipe support est disponible pour répondre à toutes tes questions.', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/support-chat'),
-                    child: const Text('Contacter le support'),
-                  ),
-                ),
-              ],
+            child: ListTile(
+              leading: Icon(cat['icon'] as IconData, color: const Color(0xFFEA6A2E)),
+              title: Text(cat['title'] as String, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+              subtitle: Text(cat['subtitle'] as String, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+              trailing: const Icon(Icons.chevron_right, color: Color(0xFF94A3B8)),
+              onTap: () => Navigator.pushNamed(context, cat['route'] as String),
             ),
-          ),
-        ],
+          );
+        }).toList(),
       ),
     );
   }

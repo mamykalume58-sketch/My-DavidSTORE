@@ -26,6 +26,11 @@ import '../screens/account/language_screen.dart';
 import '../screens/account/theme_screen.dart';
 import '../screens/account/help_screen.dart';
 import '../screens/account/contact_screen.dart';
+import '../screens/account/faq_screen.dart';
+import '../screens/account/guides_screen.dart';
+import '../screens/account/shipping_info_screen.dart';
+import '../screens/account/payment_info_screen.dart';
+import '../screens/account/returns_screen.dart';
 import '../screens/account/about_screen.dart';
 import '../screens/account/privacy_policy_screen.dart';
 import '../screens/account/logout_screen.dart';
@@ -62,6 +67,11 @@ class AppRoutes {
     '/account/theme': (context) => const ThemeSettingsScreen(),
     '/account/help': (context) => const HelpScreen(),
     '/account/contact': (context) => const ContactScreen(),
+    '/account/faq': (context) => const FaqScreen(),
+    '/account/guides': (context) => const GuidesScreen(),
+    '/account/shipping-info': (context) => const ShippingInfoScreen(),
+    '/account/payment-info': (context) => const PaymentInfoScreen(),
+    '/account/returns-info': (context) => const ReturnsInfoScreen(),
     '/account/about': (context) => const AboutScreen(),
     '/account/privacy-policy': (context) => const PrivacyPolicyScreen(),
     '/account/logout': (context) => const LogoutScreen(),
