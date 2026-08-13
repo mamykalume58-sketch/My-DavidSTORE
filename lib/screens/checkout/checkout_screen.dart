@@ -61,6 +61,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() => _errorMessage = 'Ton panier est vide.');
       return;
     }
+    if (_selectedAddress == null) {
+      setState(() => _errorMessage = 'Choisis ou ajoute une adresse de livraison.');
+      return;
+    }
 
     setState(() {
       _isSubmitting = true;
@@ -87,9 +91,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 })
             .toList(),
         'deliveryAddress': {
-          'label': 'Gaël Mpanga',
-          'address': 'C/ de Lubumbashi Q/ Mampala à la Gécamine, Lubumbashi',
-          'phone': '+243 97 000 00 00',
+          'label': _selectedAddress?['label'] ?? '',
+          'name': _selectedAddress?['name'] ?? (FirebaseAuth.instance.currentUser?.displayName ?? ''),
+          'address': _selectedAddress?['address'] ?? '',
+          'city': _selectedAddress?['city'] ?? '',
+          'phone': _selectedAddress?['phone'] ?? (FirebaseAuth.instance.currentUser?.phoneNumber ?? ''),
         },
         'deliveryMethod': {
           'label': _deliveryOptions[_selectedDelivery]['label'],
