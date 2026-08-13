@@ -19,7 +19,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String _selectedCategory = 'Tous';
   String _searchQuery = '';
   final CartService _cartService = CartService();
   final FavoritesService _favoritesService = FavoritesService();
@@ -113,10 +112,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final userId = _userId;
 
-    Query productsQuery = FirebaseFirestore.instance.collection('products');
-    if (_selectedCategory != 'Tous') {
-      productsQuery = productsQuery.where('category', isEqualTo: _selectedCategory);
-    }
+    Query productsQuery = FirebaseFirestore.instance
+        .collection('products')
+        .where('active', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .limit(4);
 
     return Scaffold(
       drawer: const AppDrawer(),
@@ -235,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Produits populaires', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                    const Text('Nouveaux produits', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, '/catalog'),
                       child: Text('Voir plus', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.primaryColor)),
