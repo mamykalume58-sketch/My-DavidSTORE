@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../services/coupon_service.dart';
 
 class CouponsScreen extends StatefulWidget {
   const CouponsScreen({super.key});
@@ -9,15 +12,43 @@ class CouponsScreen extends StatefulWidget {
 
 class _CouponsScreenState extends State<CouponsScreen> {
   bool _showDisponibles = true;
+  final CouponService _couponService = CouponService();
 
-  final List<Map<String, dynamic>> _coupons = const [
-    {'percent': '10%', 'code': 'BIENVENUE10', 'validity': 'Valable jusqu\'au 31/12/2026', 'minOrder': 'Min. 50.000 FC', 'color': Color(0xFFF59E0B)},
-    {'amount': '5.000 FC', 'code': 'DAVIDS000', 'validity': 'Valable jusqu\'au 25/12/2026', 'minOrder': 'Min. 30.000 FC', 'color': Color(0xFF2563EB)},
-    {'percent': '15%', 'code': 'FEST15', 'validity': 'Valable jusqu\'au 20/11/2026', 'minOrder': 'Min. 70.000 FC', 'color': Color(0xFF16A34A)},
-  ];
+  Color _parseColor(dynamic hex) {
+    if (hex == null) return const Color(0xFF2563EB);
+    final str = hex.toString().replaceAll('#', '');
+    try {
+      return Color(int.parse('FF$str', radix: 16));
+    } catch (_) {
+      return const Color(0xFF2563EB);
+    }
+  }
+
+  String _formatValidity(dynamic validity) {
+    if (validity is Timestamp) {
+      final date = validity.toDate();
+      return "Valable jusqu'au ${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+    }
+    return validity?.toString() ?? '';
+  }
+
+  String _formatMinOrder(dynamic minOrder) {
+    if (minOrder is num) {
+      final str = minOrder.toInt().toString();
+      final buffer = StringBuffer();
+      for (int i = 0; i < str.length; i++) {
+        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+        buffer.write(str[i]);
+      }
+      return 'Min. $buffer FC';
+    }
+    return minOrder?.toString() ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -67,42 +98,86 @@ class _CouponsScreenState extends State<CouponsScreen> {
           ),
           Expanded(
             child: !_showDisponibles
-                ? const Center(child: Text('Aucun coupon utilisé pour le moment.', style: TextStyle(color: Colors.grey)))
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _coupons.length,
-                    itemBuilder: (context, index) {
-                      final c = _coupons[index];
-                      final Color color = c['color'] as Color;
-                      final String value = c['percent'] ?? c['amount'] ?? '';
+                ? (userId == null
+                    ? const Center(child: Text('Connecte-toi pour voir tes coupons utilisés.', style: TextStyle(color: Colors.grey)))
+                    : StreamBuilder<List<Map<String, dynamic>>>(
+                        stream: _couponService.watchUsedCoupons(userId),
+                        builder: (context, snapshot) {
+                          final used = snapshot.data ?? [];
+                          if (used.isEmpty) {
+                            return const Center(child: Text('Aucun coupon utilisé pour le moment.', style: TextStyle(color: Colors.grey)));
+                          }
+                          return ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: used.length,
+                            itemBuilder: (context, index) {
+                              final c = used[index];
+                              final value = c['type'] == 'percent' ? '${c['value']}%' : '${c['value']} FC';
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(14)),
+                                child: Row(
+                                  children: [
+                                    Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(c['code']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ))
+                : StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: _couponService.watchAvailableCoupons(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final coupons = snapshot.data ?? [];
+                      if (coupons.isEmpty) {
+                        return const Center(child: Text('Aucun coupon disponible pour le moment.', style: TextStyle(color: Colors.grey)));
+                      }
+                      return ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: coupons.length,
+                        itemBuilder: (context, index) {
+                          final c = coupons[index];
+                          final color = _parseColor(c['color']);
+                          final value = c['type'] == 'percent' ? '${c['value']}%' : '${c['value']} FC';
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: color.withValues(alpha: 0.3))),
-                        child: Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14), border: Border.all(color: color.withValues(alpha: 0.3))),
+                            child: Row(
                               children: [
-                                Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-                                const Text('DE RÉDUCTION', style: TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+                                    const Text('DE RÉDUCTION', style: TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(c['code']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A))),
+                                      const SizedBox(height: 2),
+                                      Text(_formatValidity(c['validity']), style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                      Text(_formatMinOrder(c['minOrder']), style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(c['code'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A))),
-                                  const SizedBox(height: 2),
-                                  Text(c['validity'] as String, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                                  Text(c['minOrder'] as String, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       );
                     },
                   ),
