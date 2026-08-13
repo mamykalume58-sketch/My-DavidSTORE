@@ -118,6 +118,10 @@ class _HomeScreenState extends State<HomeScreen> {
         .orderBy('createdAt', descending: true)
         .limit(4);
 
+    Query searchQuery = FirebaseFirestore.instance
+        .collection('products')
+        .where('active', isEqualTo: true);
+
     return Scaffold(
       drawer: const AppDrawer(),
       backgroundColor: const Color(0xFFF8FAFC),
@@ -235,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Nouveaux produits', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                    Text(_searchQuery.isEmpty ? 'Nouveaux produits' : 'Résultats de recherche', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, '/catalog'),
                       child: Text('Voir plus', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.primaryColor)),
@@ -246,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             StreamBuilder<QuerySnapshot>(
-              stream: productsQuery.snapshots(),
+              stream: (_searchQuery.isEmpty ? productsQuery : searchQuery).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SliverToBoxAdapter(
