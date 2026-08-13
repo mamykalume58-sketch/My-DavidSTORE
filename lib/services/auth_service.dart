@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'device_service.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final DeviceService _deviceService = DeviceService();
 
   bool _googleSignInInitialized = false;
 
@@ -27,10 +29,12 @@ class AuthService {
     required String password,
   }) async {
     try {
-      return await _firebaseAuth.createUserWithEmailAndPassword(
+      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      await _deviceService.registerCurrentDevice();
+      return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -42,10 +46,12 @@ class AuthService {
     required String password,
   }) async {
     try {
-      return await _firebaseAuth.signInWithEmailAndPassword(
+      final credential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      await _deviceService.registerCurrentDevice();
+      return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -64,7 +70,9 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      return await _firebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      await _deviceService.registerCurrentDevice();
+      return userCredential;
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return null; // l'utilisateur a annulé la connexion
