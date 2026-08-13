@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               TextSpan(
                 text: 'DAVID',
-                style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5),
+                style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5),
               ),
               TextSpan(
                 text: 'STORE',
