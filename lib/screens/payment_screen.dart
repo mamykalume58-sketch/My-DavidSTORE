@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import '../theme/app_theme.dart';
+import '../services/payment_methods_service.dart';
 
 // ⚠️ Remplace par l'URL de ton service une fois déployé sur Render.
 const String kBackendBaseUrl = 'https://davidstore-payment.vercel.app';
@@ -17,8 +18,10 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   int _selectedMethod = 0;
   bool _isLoading = false;
+  bool _isLoadingDefault = true;
   String? _errorMessage;
 
+  final _paymentMethodsService = PaymentMethodsService();
   final TextEditingController _phoneController = TextEditingController();
 
   final List<Map<String, String>> _methods = [
@@ -26,6 +29,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
     {'name': 'Airtel Money', 'desc': 'Paiement rapide et sécurisé', 'logo': 'assets/images/airtel_money_logo.png'},
     {'name': 'Orange Money', 'desc': 'Paiement rapide et sécurisé', 'logo': 'assets/images/orange_money_logo.png'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDefaultPaymentMethod();
+  }
+
+  Future<void> _loadDefaultPaymentMethod() async {
+    try {
+      final defaultMethod = await _paymentMethodsService.getDefaultPaymentMethod();
+      if (defaultMethod != null && mounted) {
+        final index = _methods.indexWhere((m) => m['name'] == defaultMethod.provider);
+        final rawPhone = defaultMethod.phoneNumber.replaceFirst('+243', '');
+        setState(() {
+          if (index != -1) _selectedMethod = index;
+          _phoneController.text = rawPhone;
+        });
+      }
+    } catch (_) {
+      // Pas grave si ça échoue : l'utilisateur remplit manuellement.
+    } finally {
+      if (mounted) setState(() => _isLoadingDefault = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -132,6 +159,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     'Choisir le mode de paiement',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.navyDark),
                   ),
+                  if (_isLoadingDefault) ...[
+                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ],
                 ],
               ),
             ),

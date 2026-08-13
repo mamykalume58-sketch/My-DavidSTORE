@@ -30,6 +30,7 @@ class FavoritesService {
         'name': product.name,
         'price': product.price,
         'emoji': product.emoji,
+        'image': product.images.isNotEmpty ? product.images.first : '',
         'addedAt': FieldValue.serverTimestamp(),
       });
     }

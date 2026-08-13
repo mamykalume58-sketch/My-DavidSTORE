@@ -51,3 +51,6 @@ scripts/serviceAccountKey.json
 .vercel
 .env*
 .git-credentials-flutter
+*.bak
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/

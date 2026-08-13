@@ -25,18 +25,24 @@ class CatalogProductCard extends StatelessWidget {
         final base64Str = source.split(',').last;
         return Image.memory(
           base64Decode(base64Str),
+          width: double.infinity,
+          height: double.infinity,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Text(fallbackEmoji, style: const TextStyle(fontSize: 36)),
         );
       } else if (source.startsWith('http')) {
         return Image.network(
           source,
+          width: double.infinity,
+          height: double.infinity,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Text(fallbackEmoji, style: const TextStyle(fontSize: 36)),
         );
       } else {
         return Image.memory(
           base64Decode(source),
+          width: double.infinity,
+          height: double.infinity,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Text(fallbackEmoji, style: const TextStyle(fontSize: 36)),
         );

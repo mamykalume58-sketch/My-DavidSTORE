@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
@@ -22,6 +23,42 @@ class FavoritesScreen extends StatelessWidget {
       category: '',
     );
     await FavoritesService().toggleFavorite(userId, product);
+  }
+
+  Widget _buildThumb(String source, String fallbackEmoji) {
+    if (source.isEmpty) {
+      return Text(fallbackEmoji, style: const TextStyle(fontSize: 28));
+    }
+    try {
+      if (source.startsWith('data:image')) {
+        final base64Str = source.split(',').last;
+        return Image.memory(
+          base64Decode(base64Str),
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Text(fallbackEmoji, style: const TextStyle(fontSize: 28)),
+        );
+      } else if (source.startsWith('http')) {
+        return Image.network(
+          source,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Text(fallbackEmoji, style: const TextStyle(fontSize: 28)),
+        );
+      } else {
+        return Image.memory(
+          base64Decode(source),
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Text(fallbackEmoji, style: const TextStyle(fontSize: 28)),
+        );
+      }
+    } catch (_) {
+      return Text(fallbackEmoji, style: const TextStyle(fontSize: 28));
+    }
   }
 
   @override
@@ -66,20 +103,21 @@ class FavoritesScreen extends StatelessWidget {
                     final name = item['name']?.toString() ?? '';
                     final price = (item['price'] as num?)?.toInt() ?? 0;
                     final emoji = item['emoji']?.toString() ?? '📦';
+                    final image = item['image']?.toString() ?? '';
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Row(
                         children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              alignment: Alignment.center,
                               color: const Color(0xFFF7F7F7),
-                              borderRadius: BorderRadius.circular(10),
+                              child: _buildThumb(image, emoji),
                             ),
-                            child: Text(emoji, style: const TextStyle(fontSize: 28)),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
