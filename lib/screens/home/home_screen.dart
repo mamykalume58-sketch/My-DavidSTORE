@@ -258,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
                 if (snapshot.hasError) {
-                  return const SliverToBoxAdapter(
+                  return SliverToBoxAdapter(
                     child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Erreur: ${snapshot.error}'))),
                   );
                 }
