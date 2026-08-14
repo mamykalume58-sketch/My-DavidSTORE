@@ -120,7 +120,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                         return const Center(child: CircularProgressIndicator(color: AppColors.orangeDark));
                       }
                       if (snapshot.hasError) {
-                        return const Center(child: Text('Erreur de chargement.'));
+                        return const Center(child: Text('Erreur: ${snapshot.error}'));
                       }
 
                       final docs = snapshot.data?.docs ?? [];
