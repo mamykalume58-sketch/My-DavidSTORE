@@ -3,6 +3,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 
 let serviceAccount;
 if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
@@ -221,6 +222,38 @@ app.post('/api/support-chat', async (req, res) => {
   }
 });
 
+
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (!token) {
+      return res.status(401).json({ error: 'Token manquant' });
+    }
+
+    const decoded = await getAuth().verifyIdToken(token);
+
+    if (decoded.admin !== true) {
+      return res.status(403).json({ error: 'Accès réservé aux administrateurs' });
+    }
+
+    const listResult = await getAuth().listUsers(1000);
+    const users = listResult.users.map((u) => ({
+      uid: u.uid,
+      email: u.email || null,
+      displayName: u.displayName || null,
+      phoneNumber: u.phoneNumber || null,
+      disabled: u.disabled,
+      createdAt: u.metadata.creationTime,
+    }));
+
+    res.json({ users });
+  } catch (error) {
+    console.error('Erreur /api/admin/users:', error);
+    res.status(401).json({ error: 'Token invalide ou expiré' });
+  }
+});
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
