@@ -108,20 +108,19 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('DEBUG userId: $userId', style: const TextStyle(fontSize: 10, color: Colors.red)),
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('orders')
                         .where('userId', isEqualTo: userId)
-                        // .orderBy('createdAt', descending: true)
+                        .orderBy('createdAt', descending: true)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator(color: AppColors.orangeDark));
                       }
                       if (snapshot.hasError) {
-                        return Center(child: Text('Erreur: ${snapshot.error}'));
+                        return const Center(child: Text('Impossible de charger vos commandes.'));
                       }
 
                       final docs = snapshot.data?.docs ?? [];

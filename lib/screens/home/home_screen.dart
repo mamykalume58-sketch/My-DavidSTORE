@@ -258,8 +258,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
                 if (snapshot.hasError) {
-                  return SliverToBoxAdapter(
-                    child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Erreur: ${snapshot.error}'))),
+                  return const SliverToBoxAdapter(
+                    child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Impossible de charger les produits.'))),
                   );
                 }
 
