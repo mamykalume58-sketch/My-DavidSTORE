@@ -108,6 +108,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                Text('DEBUG userId: $userId', style: const TextStyle(fontSize: 10, color: Colors.red)),
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
