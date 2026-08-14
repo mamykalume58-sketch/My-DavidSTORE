@@ -1,18 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/cart_service.dart';
 import '../../widgets/cart_item_card.dart';
 import '../../widgets/cart_summary.dart';
+import '../../widgets/mini_product_card.dart';
+import '../../models/product.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
   final CartService _cartService = CartService();
+  List<Product> _recommended = [];
+  bool _loadingRecommended = true;
 
-  CartScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _loadRecommendedProducts();
+  }
+
+  Future<void> _loadRecommendedProducts() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('products')
+          .where('active', isEqualTo: true)
+          .get();
+
+      final products = snapshot.docs
+          .map((doc) => Product.fromMap({...doc.data(), 'id': doc.id}))
+          .where((p) => p.inStock)
+          .toList();
+
+      products.shuffle();
+
+      if (mounted) {
+        setState(() {
+          _recommended = products.take(2).toList();
+          _loadingRecommended = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingRecommended = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final String? userId = FirebaseAuth.instance.currentUser?.uid;
-    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -62,24 +106,48 @@ class CartScreen extends StatelessWidget {
                 return Column(
                   children: [
                     Expanded(
-                      child: ListView.builder(
+                      child: ListView(
                         padding: const EdgeInsets.all(16),
-                        itemCount: cartItems.length,
-                        itemBuilder: (context, index) {
-                          final item = cartItems[index];
-                          final String docId = item['docId'] ?? '';
-
-                          return CartItemCard(
-                            item: item,
-                            onQuantityChanged: (newQty) => _cartService.updateQuantity(userId, docId, newQty),
-                            onDelete: () => _cartService.removeItem(userId, docId),
-                          );
-                        },
+                        children: [
+                          ...cartItems.map((item) {
+                            final String docId = item['docId'] ?? '';
+                            return CartItemCard(
+                              item: item,
+                              onQuantityChanged: (newQty) => _cartService.updateQuantity(userId, docId, newQty),
+                              onDelete: () => _cartService.removeItem(userId, docId),
+                            );
+                          }),
+                          if (!_loadingRecommended && _recommended.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            const Text(
+                              'Vous aimeriez aussi',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: _recommended.map((product) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 12),
+                                  child: MiniProductCard(
+                                    product: product,
+                                    onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
+                                    onAddToCart: () => _cartService.addToCart(
+                                      userId: userId,
+                                      product: product,
+                                      color: product.colors.isNotEmpty ? product.colors.first : '',
+                                      size: product.sizes.isNotEmpty ? product.sizes.first : '',
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     CartSummary(
                       subtotal: subtotal,
-                      deliveryFee: 3000,
+                      deliveryFee: 5000,
                       onCheckout: () => Navigator.pushNamed(context, '/checkout'),
                     ),
                   ],
