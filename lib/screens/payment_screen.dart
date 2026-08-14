@@ -102,6 +102,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             'orderId': orderId,
             'transactionId': data['transactionId'],
             'status': data['status'],
+            'amount': amount,
           },
         );
       } else {
