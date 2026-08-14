@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/product.dart';
 import '../../services/cart_service.dart';
@@ -26,9 +27,97 @@ class _ProductScreenState extends State<ProductScreen> {
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
-  Color _colorFromHex(String hex) {
-    final cleaned = hex.replaceAll('#', '');
-    return Color(int.parse('FF$cleaned', radix: 16));
+  Color _colorFromName(String name) {
+    final normalized = name
+        .trim()
+        .toLowerCase()
+        .replaceAll('é', 'e')
+        .replaceAll('è', 'e')
+        .replaceAll('ê', 'e')
+        .replaceAll('à', 'a')
+        .replaceAll('ô', 'o')
+        .replaceAll('î', 'i')
+        .replaceAll('ç', 'c');
+
+    const colorMap = <String, Color>{
+      'noir': Colors.black,
+      'blanc': Colors.white,
+      'bleu': Colors.blue,
+      'bleu clair': Color(0xFF87CEEB),
+      'bleu marine': Color(0xFF0A1030),
+      'bleu fonce': Color(0xFF1E3A8A),
+      'rouge': Colors.red,
+      'vert': Colors.green,
+      'jaune': Colors.yellow,
+      'orange': Color(0xFFFF6B35),
+      'rose': Colors.pink,
+      'violet': Colors.purple,
+      'mauve': Color(0xFF9B59B6),
+      'gris': Colors.grey,
+      'gris clair': Color(0xFFD3D3D3),
+      'gris fonce': Color(0xFF4A4A4A),
+      'marron': Color(0xFF8B4513),
+      'beige': Color(0xFFF5F5DC),
+      'or': Color(0xFFFFD700),
+      'dore': Color(0xFFFFD700),
+      'argent': Color(0xFFC0C0C0),
+      'argente': Color(0xFFC0C0C0),
+      'turquoise': Colors.teal,
+      'kaki': Color(0xFF806B4A),
+      'bordeaux': Color(0xFF800020),
+    };
+
+    if (colorMap.containsKey(normalized)) {
+      return colorMap[normalized]!;
+    }
+
+    if (normalized.startsWith('#') ||
+        RegExp(r'^[0-9a-f]{6}$').hasMatch(normalized)) {
+      try {
+        final cleaned = normalized.replaceAll('#', '');
+        return Color(int.parse('FF$cleaned', radix: 16));
+      } catch (_) {
+        return Colors.grey.shade400;
+      }
+    }
+
+    return Colors.grey.shade400;
+  }
+
+  Widget _buildProductImage(String source, String fallbackEmoji, {double fontSize = 100}) {
+    try {
+      if (source.startsWith('data:image')) {
+        final base64Str = source.split(',').last;
+        return Image.memory(
+          base64Decode(base64Str),
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Text(fallbackEmoji, style: TextStyle(fontSize: fontSize)),
+        );
+      } else if (source.startsWith('http')) {
+        return Image.network(
+          source,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Text(fallbackEmoji, style: TextStyle(fontSize: fontSize)),
+        );
+      } else {
+        return Image.memory(
+          base64Decode(source),
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Text(fallbackEmoji, style: TextStyle(fontSize: fontSize)),
+        );
+      }
+    } catch (_) {
+      return Text(fallbackEmoji, style: TextStyle(fontSize: fontSize));
+    }
   }
 
   void _incrementQuantity() {
@@ -108,40 +197,49 @@ class _ProductScreenState extends State<ProductScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 320,
+                  height: 240,
                   width: double.infinity,
                   color: const Color(0xFFF5F5F7),
-                  child: Center(
-                    child: Text(product.emoji, style: const TextStyle(fontSize: 100)),
-                  ),
+                  child: product.images.isNotEmpty
+                      ? _buildProductImage(
+                          product.images[_selectedImageIndex < product.images.length ? _selectedImageIndex : 0],
+                          product.emoji,
+                        )
+                      : Center(
+                          child: Text(product.emoji, style: const TextStyle(fontSize: 100)),
+                        ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Row(
-                    children: List.generate(4, (index) {
-                      final isSelected = _selectedImageIndex == index;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedImageIndex = index),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 10),
-                          width: 56,
-                          height: 56,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F5F7),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: isSelected ? orange : Colors.transparent,
-                              width: 2,
+                if (product.images.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Row(
+                      children: List.generate(product.images.length, (index) {
+                        final isSelected = _selectedImageIndex == index;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedImageIndex = index),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            width: 56,
+                            height: 56,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F7),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected ? orange : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: _buildProductImage(product.images[index], product.emoji, fontSize: 24),
                             ),
                           ),
-                          child: Text(product.emoji, style: const TextStyle(fontSize: 24)),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   ),
-                ),
 
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -183,82 +281,101 @@ class _ProductScreenState extends State<ProductScreen> {
 
                       const SizedBox(height: 4),
 
-                      const Text(
-                        'En stock',
-                        style: TextStyle(fontSize: 13, color: Colors.green, fontWeight: FontWeight.w600),
+                      Text(
+                        product.inStock ? 'En stock' : 'Rupture de stock',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: product.inStock ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
 
-                      const SizedBox(height: 20),
-
-                      const Text(
-                        'Couleur',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: navy),
-                      ),
-
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 14),
 
                       Row(
-                        children: List.generate(product.colors.length, (index) {
-                          final isSelected = _selectedColorIndex == index;
-                          return GestureDetector(
-                            onTap: () => setState(() => _selectedColorIndex = index),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 12),
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: _colorFromHex(product.colors[index]),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected ? orange : const Color(0xFFE0E0E0),
-                                  width: isSelected ? 3 : 1,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Taille',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: navy),
                                 ),
-                              ),
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: List.generate(product.sizes.length, (index) {
+                                    final isSelected = _selectedSizeIndex == index;
+                                    return GestureDetector(
+                                      onTap: () => setState(() => _selectedSizeIndex = index),
+                                      child: Container(
+                                        width: 44,
+                                        height: 36,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? orange : const Color(0xFFF5F5F7),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: isSelected ? orange : const Color(0xFFE0E0E0),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          product.sizes[index],
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: isSelected ? Colors.white : navy,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
                             ),
-                          );
-                        }),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      const Text(
-                        'Taille',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: navy),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      Row(
-                        children: List.generate(product.sizes.length, (index) {
-                          final isSelected = _selectedSizeIndex == index;
-                          return GestureDetector(
-                            onTap: () => setState(() => _selectedSizeIndex = index),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 10),
-                              width: 44,
-                              height: 36,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isSelected ? orange : const Color(0xFFF5F5F7),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isSelected ? orange : const Color(0xFFE0E0E0),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Couleur',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: navy),
                                 ),
-                              ),
-                              child: Text(
-                                product.sizes[index],
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: isSelected ? Colors.white : navy,
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 12,
+                                  runSpacing: 10,
+                                  children: List.generate(product.colors.length, (index) {
+                                    final isSelected = _selectedColorIndex == index;
+                                    return GestureDetector(
+                                      onTap: () => setState(() => _selectedColorIndex = index),
+                                      child: Container(
+                                        width: 34,
+                                        height: 34,
+                                        decoration: BoxDecoration(
+                                          color: _colorFromName(product.colors[index]),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isSelected ? orange : const Color(0xFFE0E0E0),
+                                            width: isSelected ? 3 : 1,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
                                 ),
-                              ),
+                              ],
                             ),
-                          );
-                        }),
+                          ),
+                        ],
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
 
                       const Text(
                         'Quantité',
@@ -283,7 +400,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       ),
 
                       if (product.description.isNotEmpty) ...[
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 18),
                         const Text(
                           'Description',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: navy),
