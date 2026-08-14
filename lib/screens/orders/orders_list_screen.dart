@@ -113,7 +113,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                     stream: FirebaseFirestore.instance
                         .collection('orders')
                         .where('userId', isEqualTo: userId)
-                        .orderBy('createdAt', descending: true)
+                        // .orderBy('createdAt', descending: true)
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
