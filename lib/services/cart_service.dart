@@ -34,6 +34,7 @@ class CartService {
         'name': product.name,
         'price': product.price,
         'emoji': product.emoji,
+        'image': product.images.isNotEmpty ? product.images.first : '',
         'color': color,
         'size': size,
         'quantity': quantity,

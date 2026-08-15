@@ -88,6 +88,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   'price': item['price'],
                   'quantity': item['quantity'],
                   'color': item['color'],
+                  'image': item['image'] ?? '',
                 })
             .toList(),
         'deliveryAddress': {

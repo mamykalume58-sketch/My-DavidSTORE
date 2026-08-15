@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -208,8 +209,20 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                                           color: const Color(0xFFF1F5F9),
                                           borderRadius: BorderRadius.circular(10),
                                         ),
+                                        clipBehavior: Clip.antiAlias,
                                         alignment: Alignment.center,
-                                        child: const Icon(Icons.inventory_2_outlined, color: Colors.grey),
+                                        child: firstItem.image.isNotEmpty
+                                            ? Image.memory(
+                                                base64Decode(firstItem.image.contains(',')
+                                                    ? firstItem.image.split(',').last
+                                                    : firstItem.image),
+                                                width: 56,
+                                                height: 56,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    const Icon(Icons.inventory_2_outlined, color: Colors.grey),
+                                              )
+                                            : const Icon(Icons.inventory_2_outlined, color: Colors.grey),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(

@@ -6,6 +6,7 @@ class OrderItem {
   final int price;
   final int quantity;
   final String color;
+  final String image;
 
   const OrderItem({
     required this.productId,
@@ -13,6 +14,7 @@ class OrderItem {
     required this.price,
     required this.quantity,
     this.color = '',
+    this.image = '',
   });
 
   factory OrderItem.fromMap(Map<String, dynamic> map) {
@@ -22,6 +24,7 @@ class OrderItem {
       price: (map['price'] as num?)?.toInt() ?? 0,
       quantity: (map['quantity'] as num?)?.toInt() ?? 1,
       color: map['color']?.toString() ?? '',
+      image: map['image']?.toString() ?? '',
     );
   }
 
@@ -32,6 +35,7 @@ class OrderItem {
       'price': price,
       'quantity': quantity,
       'color': color,
+      'image': image,
     };
   }
 }

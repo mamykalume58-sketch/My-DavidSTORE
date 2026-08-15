@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -139,8 +140,20 @@ class OrderTrackingScreen extends StatelessWidget {
                                                 width: 56,
                                                 height: 56,
                                                 decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
+                                                clipBehavior: Clip.antiAlias,
                                                 alignment: Alignment.center,
-                                                child: const Icon(Icons.inventory_2_outlined, color: Colors.grey),
+                                                child: item.image.isNotEmpty
+                                                    ? Image.memory(
+                                                        base64Decode(item.image.contains(',')
+                                                            ? item.image.split(',').last
+                                                            : item.image),
+                                                        width: 56,
+                                                        height: 56,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (_, __, ___) =>
+                                                            const Icon(Icons.inventory_2_outlined, color: Colors.grey),
+                                                      )
+                                                    : const Icon(Icons.inventory_2_outlined, color: Colors.grey),
                                               ),
                                               const SizedBox(width: 12),
                                               Expanded(
