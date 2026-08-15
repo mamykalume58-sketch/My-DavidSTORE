@@ -13,6 +13,13 @@ class AddressesScreen extends StatefulWidget {
 
 class _AddressesScreenState extends State<AddressesScreen> {
   final AddressService _addressService = AddressService();
+  late final Stream<List<Map<String, dynamic>>> _addressesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressesStream = _addressService.watchAddresses();
+  }
 
   Future<void> _openAddressForm({Map<String, dynamic>? existing}) async {
     await showModalBottomSheet(
@@ -98,7 +105,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
         ),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _addressService.watchAddresses(),
+        stream: _addressesStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
