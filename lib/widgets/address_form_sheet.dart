@@ -539,6 +539,41 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
             ],
           ],
           const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(Icons.map_outlined, color: Colors.blue.shade700, size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                'Localisation géographique',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.verified, color: Colors.orange.shade800, size: 14),
+                const SizedBox(width: 6),
+                Text(
+                  'Actuellement disponible : Haut-Katanga',
+                  style: TextStyle(
+                    color: Colors.orange.shade900,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
 
           const Text('Province *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           const SizedBox(height: 4),
