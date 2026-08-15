@@ -1,12 +1,84 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/price_formatter.dart';
 import 'home/home_screen.dart';
 
-class ConfirmationScreen extends StatelessWidget {
+class ConfirmationScreen extends StatefulWidget {
   const ConfirmationScreen({super.key});
 
   @override
+  State<ConfirmationScreen> createState() => _ConfirmationScreenState();
+}
+
+class _ConfirmationScreenState extends State<ConfirmationScreen> {
+  String? _orderNumber;
+  bool _loadingOrder = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loadingOrder) {
+      _fetchOrderNumber();
+    }
+  }
+
+  Future<void> _fetchOrderNumber() async {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final orderId = args?['orderId'] as String?;
+    if (orderId == null) {
+      setState(() => _loadingOrder = false);
+      return;
+    }
+    try {
+      final doc = await FirebaseFirestore.instance.collection('orders').doc(orderId).get();
+      if (mounted) {
+        setState(() {
+          _orderNumber = doc.data()?['orderNumber']?.toString();
+          _loadingOrder = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingOrder = false);
+    }
+  }
+
+  Map<String, dynamic> _stateFor(String status) {
+    switch (status) {
+      case 'completed':
+      case 'success':
+        return {
+          'color': Colors.green,
+          'icon': Icons.check,
+          'title': 'Commande confirmée !',
+          'message': 'Merci pour votre achat.\nVotre commande a été enregistrée avec succès.',
+        };
+      case 'failed':
+      case 'cancelled':
+        return {
+          'color': Colors.red,
+          'icon': Icons.close,
+          'title': 'Le paiement a échoué',
+          'message': 'Le paiement n\'a pas pu être finalisé.\nVous pouvez réessayer depuis vos commandes.',
+        };
+      default:
+        return {
+          'color': Colors.orange,
+          'icon': Icons.access_time,
+          'title': 'Paiement en cours de vérification',
+          'message': 'Nous vérifions votre paiement.\nVous serez notifié dès confirmation.',
+        };
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final status = args?['status']?.toString() ?? 'pending';
+    final amount = (args?['amount'] as num?)?.toInt() ?? 0;
+    final state = _stateFor(status);
+    final isSuccess = status == 'completed' || status == 'success';
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -32,24 +104,24 @@ class ConfirmationScreen extends StatelessWidget {
                     Container(
                       width: 80,
                       height: 80,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
+                      decoration: BoxDecoration(
+                        color: state['color'] as Color,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check,
+                      child: Icon(state['icon'] as IconData,
                           color: Colors.white, size: 48),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Commande confirmée !',
-                        style: TextStyle(
+                    Text(state['title'] as String,
+                        style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: AppColors.textDark)),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Merci pour votre achat.\nVotre commande a été enregistrée avec succès.',
+                    Text(
+                      state['message'] as String,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 14, color: AppColors.textGrey),
                     ),
                     const SizedBox(height: 32),
@@ -63,9 +135,9 @@ class ConfirmationScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           _infoRow('Numéro de commande',
-                              '#OS2024051800001'),
+                              _loadingOrder ? '...' : (_orderNumber ?? '—')),
                           const SizedBox(height: 12),
-                          _infoRow('Total payé', '335.000 FC',
+                          _infoRow('Total payé', formatPrice(amount),
                               valueColor: AppColors.orangeDark),
                         ],
                       ),
@@ -78,7 +150,7 @@ class ConfirmationScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.pushNamedAndRemoveUntil(
                             context,
-                            '/profile',
+                            isSuccess ? '/profile' : '/tracking',
                             (route) => false,
                           );
                         },
@@ -88,8 +160,8 @@ class ConfirmationScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Voir mes commandes',
-                            style: TextStyle(
+                        child: Text(isSuccess ? 'Voir mes commandes' : 'Retour à mes commandes',
+                            style: const TextStyle(
                                 color: AppColors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600)),
