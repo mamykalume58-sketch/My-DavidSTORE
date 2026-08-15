@@ -31,6 +31,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
   bool _isLocating = false;
   bool _isSaving = false;
   String? _locationError;
+  bool _geoAutoFillSuccess = false;
   String? _validationError;
 
   final TextEditingController _labelController = TextEditingController();
@@ -211,6 +212,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
   Future<void> _useMyLocation() async {
     setState(() {
       _isLocating = true;
+      _geoAutoFillSuccess = false;
       _locationError = null;
     });
 
@@ -307,6 +309,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           if (mounted) {
             setState(() {
               if (matchedProvince != null) _selectedProvince = matchedProvince;
+              if (matchedProvince != null) _geoAutoFillSuccess = true;
               if (matchedCity != null) _selectedCity = matchedCity;
               if (matchedCommune != null) _selectedCommune = matchedCommune;
               if (_quartierController.text.isEmpty && quartierUsable) {
@@ -464,6 +467,13 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
               'Position GPS: ${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}',
               style: const TextStyle(color: Colors.green, fontSize: 12),
             ),
+            if (_geoAutoFillSuccess) ...[
+              const SizedBox(height: 6),
+              const Text(
+                '✓ Adresse partiellement remplie automatiquement. Vérifiez les informations détectées et complétez les champs manquants avant d\'enregistrer.',
+                style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+              ),
+            ],
           ],
           const SizedBox(height: 16),
 
