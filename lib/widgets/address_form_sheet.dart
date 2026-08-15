@@ -580,9 +580,10 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           InkWell(
             onTap: _openProvincePicker,
             child: InputDecorator(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                prefixIcon: Icon(Icons.flag_outlined, color: Colors.grey.shade600, size: 20),
               ),
               child: Text(
                 _selectedProvince?.name ?? 'Sélectionner une province',
@@ -598,9 +599,10 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           const SizedBox(height: 4),
           DropdownButtonFormField<RdcCity>(
             initialValue: _selectedCity,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              prefixIcon: Icon(Icons.location_city, color: Colors.grey.shade600, size: 20),
             ),
             hint: Text(
               _selectedProvince == null ? 'Choisissez d\'abord une province' : 'Sélectionner une ville',
@@ -622,9 +624,10 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           const SizedBox(height: 4),
           DropdownButtonFormField<String>(
             initialValue: _selectedCommune,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              prefixIcon: Icon(Icons.home_outlined, color: Colors.grey.shade600, size: 20),
             ),
             hint: Text(
               _selectedCity == null ? 'Choisissez d\'abord une ville' : 'Sélectionner une commune',
@@ -643,10 +646,11 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           const SizedBox(height: 4),
           TextField(
             controller: _quartierController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: Golf',
+              prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey.shade600, size: 20),
             ),
           ),
           const SizedBox(height: 10),
@@ -655,10 +659,11 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           const SizedBox(height: 4),
           TextField(
             controller: _avenueController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: Avenue Lumumba',
+              prefixIcon: Icon(Icons.signpost_outlined, color: Colors.grey.shade600, size: 20),
             ),
           ),
           const SizedBox(height: 10),
@@ -667,10 +672,11 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           const SizedBox(height: 4),
           TextField(
             controller: _establishmentNumberController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: N° 1425',
+              prefixIcon: Icon(Icons.tag, color: Colors.grey.shade600, size: 20),
             ),
           ),
           const SizedBox(height: 10),
@@ -679,10 +685,11 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           const SizedBox(height: 4),
           TextField(
             controller: _referenceController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: En face de l\'Hôpital Général',
+              prefixIcon: Icon(Icons.signpost, color: Colors.grey.shade600, size: 20),
             ),
           ),
           const SizedBox(height: 14),
