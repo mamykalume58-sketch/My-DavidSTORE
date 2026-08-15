@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../data/rdc_locations.dart';
 import '../services/address_service.dart';
 
@@ -222,6 +223,77 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
         _latitude = position.latitude;
         _longitude = position.longitude;
       });
+
+      try {
+        final placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          final placemark = placemarks.first;
+
+          final geoProvinceName = placemark.administrativeArea;
+          final geoCityName = (placemark.subAdministrativeArea?.isNotEmpty ?? false)
+              ? placemark.subAdministrativeArea
+              : placemark.locality;
+          final geoCommuneName = placemark.subLocality;
+          final geoQuartierName = placemark.thoroughfare;
+          final geoAvenueName = placemark.street;
+
+          RdcProvince? matchedProvince;
+          if (geoProvinceName != null) {
+            for (final province in RdcLocations.provinces) {
+              if (province.available &&
+                  province.name.toLowerCase() == geoProvinceName.toLowerCase()) {
+                matchedProvince = province;
+                break;
+              }
+            }
+          }
+
+          RdcCity? matchedCity;
+          if (matchedProvince != null && geoCityName != null) {
+            for (final city in matchedProvince.cities) {
+              if (city.name.toLowerCase() == geoCityName.toLowerCase()) {
+                matchedCity = city;
+                break;
+              }
+            }
+          }
+
+          String? matchedCommune;
+          if (matchedCity != null && geoCommuneName != null && geoCommuneName.isNotEmpty) {
+            for (final commune in matchedCity.communes) {
+              if (commune.toLowerCase() == geoCommuneName.toLowerCase()) {
+                matchedCommune = commune;
+                break;
+              }
+            }
+          }
+
+          if (mounted) {
+            setState(() {
+              if (matchedProvince != null) _selectedProvince = matchedProvince;
+              if (matchedCity != null) _selectedCity = matchedCity;
+              if (matchedCommune != null) _selectedCommune = matchedCommune;
+              if (_quartierController.text.isEmpty &&
+                  geoQuartierName != null &&
+                  geoQuartierName.isNotEmpty) {
+                _quartierController.text = geoQuartierName;
+              }
+              if (_avenueController.text.isEmpty &&
+                  geoAvenueName != null &&
+                  geoAvenueName.isNotEmpty) {
+                _avenueController.text = geoAvenueName;
+              }
+            });
+          }
+        }
+      } catch (_) {
+        // Géocodage inverse indisponible ou échoué : on garde uniquement
+        // les coordonnées GPS brutes déjà enregistrées, sans rien supposer.
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
