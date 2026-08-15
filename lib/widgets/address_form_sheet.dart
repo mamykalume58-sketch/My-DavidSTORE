@@ -187,6 +187,26 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
       _onProvinceChanged(picked);
     }
   }
+  String _normalizeForMatch(String input) {
+    var s = input.trim().toLowerCase();
+    const accents = {
+      'á': 'a', 'à': 'a', 'â': 'a', 'ä': 'a', 'ã': 'a',
+      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+      'ó': 'o', 'ò': 'o', 'ô': 'o', 'ö': 'o', 'õ': 'o',
+      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+      'ç': 'c', 'ñ': 'n',
+    };
+    accents.forEach((accented, plain) {
+      s = s.replaceAll(accented, plain);
+    });
+    s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return s;
+  }
+
+  bool _looksLikePlusCode(String input) {
+    return RegExp(r'^[23456789CFGHJMPQRVWX]{4,}\+[23456789CFGHJMPQRVWX]{2,}').hasMatch(input.trim());
+  }
 
   Future<void> _useMyLocation() async {
     setState(() {
@@ -244,9 +264,10 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
 
           RdcProvince? matchedProvince;
           if (geoProvinceName != null) {
+            final normalizedGeoProvince = _normalizeForMatch(geoProvinceName);
             for (final province in RdcLocations.provinces) {
               if (province.available &&
-                  province.name.toLowerCase() == geoProvinceName.toLowerCase()) {
+                  _normalizeForMatch(province.name) == normalizedGeoProvince) {
                 matchedProvince = province;
                 break;
               }
@@ -255,8 +276,9 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
 
           RdcCity? matchedCity;
           if (matchedProvince != null && geoCityName != null) {
+            final normalizedGeoCity = _normalizeForMatch(geoCityName);
             for (final city in matchedProvince.cities) {
-              if (city.name.toLowerCase() == geoCityName.toLowerCase()) {
+              if (_normalizeForMatch(city.name) == normalizedGeoCity) {
                 matchedCity = city;
                 break;
               }
@@ -265,27 +287,32 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
 
           String? matchedCommune;
           if (matchedCity != null && geoCommuneName != null && geoCommuneName.isNotEmpty) {
+            final normalizedGeoCommune = _normalizeForMatch(geoCommuneName);
             for (final commune in matchedCity.communes) {
-              if (commune.toLowerCase() == geoCommuneName.toLowerCase()) {
+              if (_normalizeForMatch(commune) == normalizedGeoCommune) {
                 matchedCommune = commune;
                 break;
               }
             }
           }
 
+          final quartierUsable = geoQuartierName != null &&
+              geoQuartierName.isNotEmpty &&
+              !_looksLikePlusCode(geoQuartierName);
+
+          final avenueUsable = geoAvenueName != null &&
+              geoAvenueName.isNotEmpty &&
+              !_looksLikePlusCode(geoAvenueName);
+
           if (mounted) {
             setState(() {
               if (matchedProvince != null) _selectedProvince = matchedProvince;
               if (matchedCity != null) _selectedCity = matchedCity;
               if (matchedCommune != null) _selectedCommune = matchedCommune;
-              if (_quartierController.text.isEmpty &&
-                  geoQuartierName != null &&
-                  geoQuartierName.isNotEmpty) {
+              if (_quartierController.text.isEmpty && quartierUsable) {
                 _quartierController.text = geoQuartierName;
               }
-              if (_avenueController.text.isEmpty &&
-                  geoAvenueName != null &&
-                  geoAvenueName.isNotEmpty) {
+              if (_avenueController.text.isEmpty && avenueUsable) {
                 _avenueController.text = geoAvenueName;
               }
             });
