@@ -433,7 +433,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
     final communes = _selectedCity?.communes ?? const [];
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -455,36 +455,36 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
             ),
           ),
           if (_locationError != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               _locationError!,
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ],
           if (_latitude != null && _longitude != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Position GPS: ${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}',
               style: const TextStyle(color: Colors.green, fontSize: 12),
             ),
             if (_geoAutoFillSuccess) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               const Text(
                 '✓ Adresse partiellement remplie automatiquement. Vérifiez les informations détectées et complétez les champs manquants avant d\'enregistrer.',
                 style: TextStyle(color: Colors.blueGrey, fontSize: 12),
               ),
             ],
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Province *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           InkWell(
             onTap: _openProvincePicker,
             child: InputDecorator(
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
               child: Text(
                 _selectedProvince?.name ?? 'Sélectionner une province',
@@ -494,10 +494,10 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Ville / Territoire *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           DropdownButtonFormField<RdcCity>(
             initialValue: _selectedCity,
             decoration: const InputDecoration(
@@ -518,10 +518,10 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
                     });
                   },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Commune *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           DropdownButtonFormField<String>(
             initialValue: _selectedCommune,
             decoration: const InputDecoration(
@@ -539,94 +539,94 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
                     setState(() => _selectedCommune = commune);
                   },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Quartier *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           TextField(
             controller: _quartierController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: Golf',
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Avenue / Rue *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           TextField(
             controller: _avenueController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: Avenue Lumumba',
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Numéro d\'établissement *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           TextField(
             controller: _establishmentNumberController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: N° 1425',
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           const Text('Référence / Point de repère *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           TextField(
             controller: _referenceController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               hintText: 'Ex: En face de l\'Hôpital Général',
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
           const Text('Autres détails', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           TextField(
             controller: _labelController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               labelText: 'Libellé (ex: Domicile, Bureau)',
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           TextField(
             controller: _nameController,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               labelText: 'Nom complet *',
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           TextField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               labelText: 'Téléphone *',
             ),
           ),
 
           if (_validationError != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               _validationError!,
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
           SizedBox(
             width: double.infinity,
