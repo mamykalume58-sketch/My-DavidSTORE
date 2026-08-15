@@ -694,7 +694,16 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           ),
           const SizedBox(height: 14),
 
-          const Text('Autres détails', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Row(
+            children: [
+              Icon(Icons.home_work_outlined, color: Colors.blue.shade700, size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                'Autres détails',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
           const SizedBox(height: 4),
           TextField(
             controller: _labelController,
