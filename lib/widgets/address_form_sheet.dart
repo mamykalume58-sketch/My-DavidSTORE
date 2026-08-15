@@ -20,6 +20,7 @@ class AddressFormSheet extends StatefulWidget {
 
 class _AddressFormSheetState extends State<AddressFormSheet> {
   final AddressService _addressService = AddressService();
+  final Geocoding _geocoding = Geocoding();
 
   RdcProvince? _selectedProvince;
   RdcCity? _selectedCity;
@@ -225,7 +226,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
       });
 
       try {
-        final placemarks = await placemarkFromCoordinates(
+        final placemarks = await _geocoding.placemarkFromCoordinates(
           position.latitude,
           position.longitude,
         );
