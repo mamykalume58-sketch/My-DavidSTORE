@@ -742,6 +742,58 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           ],
           const SizedBox(height: 14),
 
+          if (_latitude != null && _longitude != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, color: Colors.green.shade700, size: 18),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
+                          'Coordonnées GPS (si disponibles)',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ),
+                      Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Latitude', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                            Text(_latitude!.toStringAsFixed(4), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Longitude', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                            Text(_longitude!.toStringAsFixed(4), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
           SizedBox(
             width: double.infinity,
             height: 48,
