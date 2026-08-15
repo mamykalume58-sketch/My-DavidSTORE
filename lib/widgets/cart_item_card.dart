@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/price_formatter.dart';
+import 'dart:convert';
 
 class CartItemCard extends StatelessWidget {
   final Map<String, dynamic> item;
@@ -38,7 +39,22 @@ class CartItemCard extends StatelessWidget {
             height: 72,
             decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
             alignment: Alignment.center,
-            child: Text(emoji, style: const TextStyle(fontSize: 28)),
+            clipBehavior: Clip.antiAlias,
+            child: (item['image'] != null && (item['image'] as String).isNotEmpty)
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.memory(
+                      base64Decode((item['image'] as String).contains(',')
+                          ? (item['image'] as String).split(',').last
+                          : item['image'] as String),
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Text(emoji, style: const TextStyle(fontSize: 28)),
+                    ),
+                  )
+                : Text(emoji, style: const TextStyle(fontSize: 28)),
           ),
           const SizedBox(width: 12),
           Expanded(
