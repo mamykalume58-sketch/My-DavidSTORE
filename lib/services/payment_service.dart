@@ -19,7 +19,7 @@ class PaymentService {
         'amount': amount,
         'clientPhoneNumber': phone,
         'orderId': orderId,
-        'sandbox': true,
+        'sandbox': false,
       }),
     );
 
