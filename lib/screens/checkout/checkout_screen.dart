@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/cart_service.dart';
 import '../../services/address_service.dart';
-import 'package:geolocator/geolocator.dart';
+import '../../widgets/address_form_sheet.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -16,13 +16,13 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedDelivery = 0;
   bool _isSubmitting = false;
+  bool _isLoadingAddress = true;
   String? _errorMessage;
 
   final CartService _cartService = CartService();
   final AddressService _addressService = AddressService();
 
   Map<String, dynamic>? _selectedAddress;
-  bool _isLocating = false;
 
   final List<Map<String, dynamic>> _deliveryOptions = [
     {'label': 'Livraison standard (3-5 jours)', 'price': 0},
@@ -30,6 +30,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   ];
 
   int get _fraisLivraison => _deliveryOptions[_selectedDelivery]['price'] as int;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDefaultAddress();
+  }
+
+  Future<void> _loadDefaultAddress() async {
+    try {
+      final defaultAddress = await _addressService.getDefaultAddress();
+      if (mounted) {
+        setState(() {
+          _selectedAddress = defaultAddress;
+          _isLoadingAddress = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingAddress = false);
+      }
+    }
+  }
 
   String _formatPrice(int value) {
     final str = value.toString();
@@ -97,6 +119,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'address': _selectedAddress?['address'] ?? '',
           'city': _selectedAddress?['city'] ?? '',
           'phone': _selectedAddress?['phone'] ?? (FirebaseAuth.instance.currentUser?.phoneNumber ?? ''),
+          'province': _selectedAddress?['province'],
+          'commune': _selectedAddress?['commune'],
+          'quartier': _selectedAddress?['quartier'],
+          'avenue': _selectedAddress?['avenue'],
+          'establishmentNumber': _selectedAddress?['establishmentNumber'],
+          'reference': _selectedAddress?['reference'],
+          'latitude': _selectedAddress?['latitude'],
+          'longitude': _selectedAddress?['longitude'],
         },
         'deliveryMethod': {
           'label': _deliveryOptions[_selectedDelivery]['label'],
@@ -126,196 +156,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-
-  Future<void> _addOrEditAddress({Map<String, dynamic>? existing}) async {
-    final label = TextEditingController(
-      text: existing?['label']?.toString() ?? '',
-    );
-    final name = TextEditingController(
-      text: existing?['name']?.toString() ?? '',
-    );
-    final phone = TextEditingController(
-      text: existing?['phone']?.toString() ?? '',
-    );
-    final address = TextEditingController(
-      text: existing?['address']?.toString() ?? '',
-    );
-    final city = TextEditingController(
-      text: existing?['city']?.toString() ?? '',
-    );
-
-    await showDialog(
+  Future<void> _openAddressForm({Map<String, dynamic>? existing}) async {
+    await showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          existing == null ? 'Ajouter une adresse' : 'Modifier l’adresse',
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _isLocating ? null : _useMyLocation,
-                  icon: const Icon(Icons.my_location),
-                  label: Text(
-                    _isLocating
-                        ? 'Localisation...'
-                        : 'Utiliser ma position',
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: label,
-                decoration: const InputDecoration(labelText: 'Libellé'),
-              ),
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(labelText: 'Nom complet'),
-              ),
-              TextField(
-                controller: phone,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Téléphone'),
-              ),
-              TextField(
-                controller: address,
-                decoration: const InputDecoration(labelText: 'Adresse'),
-              ),
-              TextField(
-                controller: city,
-                decoration: const InputDecoration(labelText: 'Ville'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (name.text.trim().isEmpty ||
-                  phone.text.trim().isEmpty ||
-                  address.text.trim().isEmpty ||
-                  city.text.trim().isEmpty) {
-                return;
-              }
-
-              try {
-                if (existing == null) {
-                  final id = await _addressService.addAddress(
-                    label: label.text.trim(),
-                    name: name.text.trim(),
-                    phone: phone.text.trim(),
-                    address: address.text.trim(),
-                    city: city.text.trim(),
-                    isDefault: true,
-                  );
-
-                  final saved = await _addressService.getAddress(id);
-
-                  if (mounted) {
-                    setState(() => _selectedAddress = saved);
-                  }
-                } else {
-                  await _addressService.updateAddress(
-                    addressId: existing['id'].toString(),
-                    label: label.text.trim(),
-                    name: name.text.trim(),
-                    phone: phone.text.trim(),
-                    address: address.text.trim(),
-                    city: city.text.trim(),
-                    latitude: (existing['latitude'] as num?)?.toDouble(),
-                    longitude: (existing['longitude'] as num?)?.toDouble(),
-                    isDefault: existing['isDefault'] == true,
-                  );
-
-                  final saved = await _addressService.getAddress(
-                    existing['id'].toString(),
-                  );
-
-                  if (mounted) {
-                    setState(() => _selectedAddress = saved);
-                  }
-                }
-
-                if (dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                }
-              } catch (e) {
-                debugPrint('Erreur adresse: $e');
-              }
-            },
-            child: Text(existing == null ? 'Ajouter' : 'Enregistrer'),
-          ),
-        ],
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: AddressFormSheet(
+              existing: existing,
+              onSaved: (addressId) async {
+                final saved = await _addressService.getAddress(addressId);
+                if (mounted) {
+                  setState(() => _selectedAddress = saved);
+                }
+                if (sheetContext.mounted) {
+                  Navigator.pop(sheetContext);
+                }
+              },
+            ),
+          ),
+        );
+      },
     );
-
-    label.dispose();
-    name.dispose();
-    phone.dispose();
-    address.dispose();
-    city.dispose();
-  }
-
-
-  Future<void> _useMyLocation() async {
-    setState(() => _isLocating = true);
-
-    try {
-      final enabled = await Geolocator.isLocationServiceEnabled();
-
-      if (!enabled) {
-        throw Exception('Active la localisation du téléphone.');
-      }
-
-      var permission = await Geolocator.checkPermission();
-
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        throw Exception('Permission GPS refusée.');
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        _selectedAddress = {
-          'label': 'Ma position',
-          'name': FirebaseAuth.instance.currentUser?.displayName ?? '',
-          'phone': FirebaseAuth.instance.currentUser?.phoneNumber ?? '',
-          'address': 'Position GPS',
-          'city': '',
-          'latitude': position.latitude,
-          'longitude': position.longitude,
-        };
-      });
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage =
-              e.toString().replaceFirst('Exception: ', '');
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLocating = false);
-      }
-    }
   }
 
   @override
@@ -376,41 +245,83 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(color: Colors.grey.shade200),
                                 ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(Icons.location_on_outlined,
-                                        color: AppColors.orangeDark),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child: Column(
+                                child: _isLoadingAddress
+                                    ? const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 8),
+                                          child: SizedBox(
+                                            height: 18,
+                                            width: 18,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        ),
+                                      )
+                                    : Row(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('Gaël Mpanga',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppColors.textDark)),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            'C/ de Lubumbashi Q/ Mampala à la Gécamine, Lubumbashi',
-                                            style: TextStyle(
-                                                fontSize: 13, color: AppColors.textGrey),
+                                          const Icon(Icons.location_on_outlined,
+                                              color: AppColors.orangeDark),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: _selectedAddress == null
+                                                ? const Text(
+                                                    'Aucune adresse sélectionnée',
+                                                    style: TextStyle(
+                                                        fontSize: 13, color: AppColors.textGrey),
+                                                  )
+                                                : Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        (_selectedAddress?['name'] as String?)
+                                                                ?.isNotEmpty ==
+                                                                true
+                                                            ? _selectedAddress!['name'] as String
+                                                            : 'Adresse de livraison',
+                                                        style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: AppColors.textDark),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        [
+                                                          _selectedAddress?['address'],
+                                                          _selectedAddress?['commune'],
+                                                          _selectedAddress?['city'],
+                                                        ]
+                                                            .where((e) =>
+                                                                e != null &&
+                                                                e.toString().isNotEmpty)
+                                                            .join(', '),
+                                                        style: const TextStyle(
+                                                            fontSize: 13,
+                                                            color: AppColors.textGrey),
+                                                      ),
+                                                      if ((_selectedAddress?['phone'] as String?)
+                                                              ?.isNotEmpty ==
+                                                          true) ...[
+                                                        const SizedBox(height: 4),
+                                                        Text(
+                                                          _selectedAddress!['phone'] as String,
+                                                          style: const TextStyle(
+                                                              fontSize: 13,
+                                                              color: AppColors.textGrey),
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
                                           ),
-                                          SizedBox(height: 4),
-                                          Text('+243 97 000 00 00',
-                                              style: TextStyle(
-                                                  fontSize: 13, color: AppColors.textGrey)),
+                                          TextButton(
+                                            onPressed: () =>
+                                                _openAddressForm(existing: _selectedAddress),
+                                            child: Text(
+                                              _selectedAddress == null ? 'Ajouter' : 'Changer',
+                                              style: const TextStyle(
+                                                  color: AppColors.orangeDark, fontSize: 13),
+                                            ),
+                                          ),
                                         ],
                                       ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => _addOrEditAddress(existing: _selectedAddress),
-                                      child: const Text('Changer',
-                                          style: TextStyle(
-                                              color: AppColors.orangeDark, fontSize: 13)),
-                                    ),
-                                  ],
-                                ),
                               ),
                               const SizedBox(height: 24),
                               const Text(
@@ -574,3 +485,4 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 }
+
