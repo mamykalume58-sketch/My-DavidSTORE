@@ -1,11 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'device_service.dart';
+import 'notification_service.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final DeviceService _deviceService = DeviceService();
+  final NotificationService _notificationService = NotificationService();
 
   bool _googleSignInInitialized = false;
 
@@ -34,6 +36,7 @@ class AuthService {
         password: password,
       );
       await _deviceService.registerCurrentDevice();
+      await _notificationService.registerFcmToken();
       return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
@@ -51,6 +54,7 @@ class AuthService {
         password: password,
       );
       await _deviceService.registerCurrentDevice();
+      await _notificationService.registerFcmToken();
       return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
@@ -72,6 +76,7 @@ class AuthService {
 
       final userCredential = await _firebaseAuth.signInWithCredential(credential);
       await _deviceService.registerCurrentDevice();
+      await _notificationService.registerFcmToken();
       return userCredential;
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
