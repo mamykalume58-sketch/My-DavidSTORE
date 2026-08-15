@@ -6,7 +6,7 @@ class CartSummary extends StatelessWidget {
   final int deliveryFee;
   final VoidCallback onCheckout;
 
-  const CartSummary({super.key, required this.subtotal, this.deliveryFee = 3000, required this.onCheckout});
+  const CartSummary({super.key, required this.subtotal, this.deliveryFee = 5000, required this.onCheckout});
 
   @override
   Widget build(BuildContext context) {

@@ -44,6 +44,12 @@ class AddressService {
     double? latitude,
     double? longitude,
     bool isDefault = false,
+    String? province,
+    String? commune,
+    String? quartier,
+    String? avenue,
+    String? establishmentNumber,
+    String? reference,
   }) async {
     if (_userId == null) {
       throw StateError('Utilisateur non connecté');
@@ -58,6 +64,12 @@ class AddressService {
       'latitude': latitude,
       'longitude': longitude,
       'isDefault': isDefault,
+      'province': province,
+      'commune': commune,
+      'quartier': quartier,
+      'avenue': avenue,
+      'establishmentNumber': establishmentNumber,
+      'reference': reference,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -81,6 +93,12 @@ class AddressService {
     double? latitude,
     double? longitude,
     bool isDefault = false,
+    String? province,
+    String? commune,
+    String? quartier,
+    String? avenue,
+    String? establishmentNumber,
+    String? reference,
   }) async {
     if (_userId == null) {
       throw StateError('Utilisateur non connecté');
@@ -99,6 +117,12 @@ class AddressService {
       'latitude': latitude,
       'longitude': longitude,
       'isDefault': isDefault,
+      'province': province,
+      'commune': commune,
+      'quartier': quartier,
+      'avenue': avenue,
+      'establishmentNumber': establishmentNumber,
+      'reference': reference,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -188,3 +212,4 @@ class AddressService {
     await batch.commit();
   }
 }
+
