@@ -141,12 +141,15 @@ class _AddressesScreenState extends State<AddressesScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          addr['isDefault'] == true
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          color: addr['isDefault'] == true ? theme.primaryColor : Colors.grey,
-                          size: 20,
+                        GestureDetector(
+                          onTap: addr['isDefault'] == true ? null : () => _setDefault(addressId),
+                          child: Icon(
+                            addr['isDefault'] == true
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: addr['isDefault'] == true ? theme.primaryColor : Colors.grey,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
