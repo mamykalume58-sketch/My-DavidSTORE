@@ -96,10 +96,34 @@ app.post('/api/shwary/callback', async (req, res) => {
     }
 
     const transactionRef = db.collection('transactions').doc(id);
-    const transactionDoc = await transactionRef.get();
 
-    if (!transactionDoc.exists) {
-      console.warn(`Transaction inconnue reçue en callback: ${id}`);
+    // Race condition connue : Shwary peut envoyer le callback "pending" avant
+    // que notre propre écriture Firestore (faite dans /api/shwary/pay) ne soit
+    // terminée. On retente plusieurs fois avec un court délai avant d'abandonner,
+    // en restant largement sous le timeout de 10s de Shwary.
+    let transactionDoc = null;
+    const maxAttempts = 5;
+    const delayMs = 700;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const doc = await transactionRef.get();
+      if (doc.exists) {
+        transactionDoc = doc;
+        break;
+      }
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+
+    if (!transactionDoc) {
+      console.warn(`Transaction inconnue reçue en callback après ${maxAttempts} tentatives: ${id}`);
+      // Filet de sécurité : on garde une trace du callback orphelin pour
+      // réconciliation manuelle plutôt que de le perdre silencieusement.
+      await db.collection('orphan_callbacks').doc(id).set({
+        payload: transaction,
+        receivedAt: FieldValue.serverTimestamp(),
+      });
       return res.status(200).json({ received: true });
     }
 
@@ -122,7 +146,6 @@ app.post('/api/shwary/callback', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors du traitement du callback' });
   }
 });
-
 app.get('/api/shwary/status/:transactionId', async (req, res) => {
   try {
     const { transactionId } = req.params;
