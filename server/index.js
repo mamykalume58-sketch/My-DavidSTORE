@@ -24,6 +24,7 @@ const SHWARY_BASE_URL = 'https://api.shwary.com/api/v1';
 const SHWARY_MERCHANT_ID = process.env.SHWARY_MERCHANT_ID;
 const SHWARY_MERCHANT_KEY = process.env.SHWARY_MERCHANT_KEY;
 const CALLBACK_URL = process.env.CALLBACK_URL;
+const SHWARY_CALLBACK_TOKEN = process.env.SHWARY_CALLBACK_TOKEN;
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', service: 'davidstore-payment-server' });
@@ -48,7 +49,7 @@ app.post('/api/shwary/pay', async (req, res) => {
         'x-merchant-id': SHWARY_MERCHANT_ID,
         'x-merchant-key': SHWARY_MERCHANT_KEY,
       },
-      body: JSON.stringify({ amount, clientPhoneNumber, callbackUrl: CALLBACK_URL }),
+      body: JSON.stringify({ amount, clientPhoneNumber, callbackUrl: `${CALLBACK_URL}?token=${SHWARY_CALLBACK_TOKEN}` }),
     });
 
     const data = await shwaryResponse.json();
@@ -82,6 +83,11 @@ app.post('/api/shwary/pay', async (req, res) => {
 
 app.post('/api/shwary/callback', async (req, res) => {
   try {
+    if (req.query.token !== SHWARY_CALLBACK_TOKEN) {
+      console.warn('Callback Shwary refuse : token invalide ou manquant');
+      return res.status(401).json({ error: 'Non autorise' });
+    }
+
     const transaction = req.body;
     const { id, status, failureReason, txHash, completedAt } = transaction;
 
