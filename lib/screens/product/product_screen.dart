@@ -153,7 +153,7 @@ class _ProductScreenState extends State<ProductScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur lors de l\'ajout au panier')),
+        SnackBar(content: Text('Erreur: $e')),
       );
     } finally {
       if (mounted) setState(() => _isAddingToCart = false);
