@@ -1,8 +1,0 @@
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "davidstore-worker",
-  "main": "src/index.js",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "account_id": "7294e071344e5b11d20892a9473781c5"
-}
