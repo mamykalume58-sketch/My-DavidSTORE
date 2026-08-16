@@ -21,6 +21,21 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
+  late final Stream<QuerySnapshot>? _ordersStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final userId = _userId;
+    _ordersStream = userId == null
+        ? null
+        : FirebaseFirestore.instance
+            .collection('orders')
+            .where('userId', isEqualTo: userId)
+            .orderBy('createdAt', descending: true)
+            .snapshots();
+  }
+
   bool _matchesFilter(String status) {
     switch (_selectedFilter) {
       case 'En cours':
@@ -111,11 +126,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                 const SizedBox(height: 12),
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('orders')
-                        .where('userId', isEqualTo: userId)
-                        .orderBy('createdAt', descending: true)
-                        .snapshots(),
+                    stream: _ordersStream,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator(color: AppColors.orangeDark));
