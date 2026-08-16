@@ -27,11 +27,13 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
   void initState() {
     super.initState();
     final userId = _userId;
+    final cutoff = DateTime.now().subtract(const Duration(days: 14));
     _ordersStream = userId == null
         ? null
         : FirebaseFirestore.instance
             .collection('orders')
             .where('userId', isEqualTo: userId)
+            .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(cutoff))
             .orderBy('createdAt', descending: true)
             .snapshots();
   }
