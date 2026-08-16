@@ -164,23 +164,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: AddressFormSheet(
-              existing: existing,
-              onSaved: (addressId) async {
-                final saved = await _addressService.getAddress(addressId);
-                if (mounted) {
-                  setState(() => _selectedAddress = saved);
-                }
-                if (sheetContext.mounted) {
-                  Navigator.pop(sheetContext);
-                }
-              },
-            ),
+        return SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.95,
+          child: AddressFormSheet(
+            existing: existing,
+            onSaved: (addressId) async {
+              final saved = await _addressService.getAddress(addressId);
+              if (mounted) {
+                setState(() => _selectedAddress = saved);
+              }
+              if (sheetContext.mounted) {
+                Navigator.pop(sheetContext);
+              }
+            },
           ),
         );
       },

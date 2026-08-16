@@ -432,384 +432,328 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
     final cities = _selectedProvince?.cities ?? const [];
     final communes = _selectedCity?.communes ?? const [];
 
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(Icons.location_on, color: Colors.blue.shade700, size: 20),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Ajouter une adresse de livraison',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      Text(
-                        'Renseignez vos coordonnées pour une livraison rapide',
-                        style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.bolt, color: Colors.blue.shade700, size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Gagnez du temps !',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                      Text(
-                        'Remplissez automatiquement votre adresse avec votre position GPS.',
-                        style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _isLocating ? null : _useMyLocation,
-              icon: _isLocating
-                  ? const SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.my_location),
-              label: Text(
-                _isLocating ? 'Localisation en cours...' : 'Utiliser ma position actuelle',
-              ),
-            ),
-          ),
-          if (_locationError != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              _locationError!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ],
-          if (_latitude != null && _longitude != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              'Position GPS: ${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}',
-              style: const TextStyle(color: Colors.green, fontSize: 12),
-            ),
-            if (_geoAutoFillSuccess) ...[
-              const SizedBox(height: 4),
-              const Text(
-                '✓ Adresse partiellement remplie automatiquement. Vérifiez les informations détectées et complétez les champs manquants avant d\'enregistrer.',
-                style: TextStyle(color: Colors.blueGrey, fontSize: 12),
-              ),
-            ],
-          ],
-          const SizedBox(height: 10),
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          color: Colors.blue.shade900,
+          child: Row(
             children: [
-              Icon(Icons.map_outlined, color: Colors.blue.shade700, size: 18),
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                splashRadius: 18,
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
               const SizedBox(width: 6),
-              const Text(
-                'Localisation géographique',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              const Expanded(
+                child: Text(
+                  'Ajouter une adresse de livraison',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Container(
+        ),
+        Expanded(
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Icon(Icons.verified, color: Colors.orange.shade800, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  'Actuellement disponible : Haut-Katanga',
-                  style: TextStyle(
-                    color: Colors.orange.shade900,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                SizedBox(
+                  width: double.infinity,
+                  height: 34,
+                  child: ElevatedButton.icon(
+                    onPressed: _isLocating ? null : _useMyLocation,
+                    style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
+                    icon: _isLocating
+                        ? const SizedBox(
+                            height: 12,
+                            width: 12,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.my_location, size: 16),
+                    label: Text(
+                      _isLocating ? 'Localisation...' : 'Utiliser ma position actuelle',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                 ),
+                if (_locationError != null)
+                  Text(_locationError!, style: const TextStyle(color: Colors.red, fontSize: 10)),
+
+                const Text('Province *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                InkWell(
+                  onTap: _openProvincePicker,
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      prefixIcon: Icon(Icons.flag_outlined, color: Colors.grey.shade600, size: 16),
+                      isDense: true,
+                    ),
+                    child: Text(
+                      _selectedProvince?.name ?? 'Sélectionner',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _selectedProvince == null ? Colors.grey : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Ville *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          DropdownButtonFormField<RdcCity>(
+                            initialValue: _selectedCity,
+                            isDense: true,
+                            style: const TextStyle(fontSize: 12, color: Colors.black87),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              isDense: true,
+                            ),
+                            hint: const Text('Ville', style: TextStyle(fontSize: 11)),
+                            items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c.name, style: const TextStyle(fontSize: 12)))).toList(),
+                            onChanged: _selectedProvince == null
+                                ? null
+                                : (city) {
+                                    if (city == null) return;
+                                    setState(() {
+                                      _selectedCity = city;
+                                      _selectedCommune = null;
+                                    });
+                                  },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Commune *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedCommune,
+                            isDense: true,
+                            style: const TextStyle(fontSize: 12, color: Colors.black87),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              isDense: true,
+                            ),
+                            hint: const Text('Commune', style: TextStyle(fontSize: 11)),
+                            items: communes.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12)))).toList(),
+                            onChanged: _selectedCity == null
+                                ? null
+                                : (commune) {
+                                    if (commune == null) return;
+                                    setState(() => _selectedCommune = commune);
+                                  },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Quartier *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          TextField(
+                            controller: _quartierController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              hintText: 'Ex: Golf',
+                              hintStyle: TextStyle(fontSize: 11),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Avenue *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          TextField(
+                            controller: _avenueController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              hintText: 'Ex: Av. Lumumba',
+                              hintStyle: TextStyle(fontSize: 11),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('N° établissement *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          TextField(
+                            controller: _establishmentNumberController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              hintText: 'N° 1425',
+                              hintStyle: TextStyle(fontSize: 11),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Référence *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          TextField(
+                            controller: _referenceController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              hintText: 'Point de repère',
+                              hintStyle: TextStyle(fontSize: 11),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Nom complet *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          TextField(
+                            controller: _nameController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Téléphone *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                if (_latitude != null && _longitude != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green.shade600, size: 14),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'GPS: ${_latitude!.toStringAsFixed(4)}, ${_longitude!.toStringAsFixed(4)}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                if (_validationError != null)
+                  Text(_validationError!, style: const TextStyle(color: Colors.red, fontSize: 11)),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-
-
-          const Text('Province *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          InkWell(
-            onTap: _openProvincePicker,
-            child: InputDecorator(
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                prefixIcon: Icon(Icons.flag_outlined, color: Colors.grey.shade600, size: 20),
-              ),
-              child: Text(
-                _selectedProvince?.name ?? 'Sélectionner une province',
-                style: TextStyle(
-                  color: _selectedProvince == null ? Colors.grey : Colors.black87,
-                ),
-              ),
-            ),
+        ),
+        AnimatedPadding(
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.only(
+            left: 10,
+            right: 10,
+            top: 6,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 10,
           ),
-          const SizedBox(height: 10),
-
-          const Text('Ville / Territoire *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          DropdownButtonFormField<RdcCity>(
-            initialValue: _selectedCity,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              prefixIcon: Icon(Icons.location_city, color: Colors.grey.shade600, size: 20),
-            ),
-            hint: Text(
-              _selectedProvince == null ? 'Choisissez d\'abord une province' : 'Sélectionner une ville',
-            ),
-            items: cities.map((city) => DropdownMenuItem(value: city, child: Text(city.name))).toList(),
-            onChanged: _selectedProvince == null
-                ? null
-                : (city) {
-                    if (city == null) return;
-                    setState(() {
-                      _selectedCity = city;
-                      _selectedCommune = null;
-                    });
-                  },
-          ),
-          const SizedBox(height: 10),
-
-          const Text('Commune *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedCommune,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              prefixIcon: Icon(Icons.home_outlined, color: Colors.grey.shade600, size: 20),
-            ),
-            hint: Text(
-              _selectedCity == null ? 'Choisissez d\'abord une ville' : 'Sélectionner une commune',
-            ),
-            items: communes.map((commune) => DropdownMenuItem(value: commune, child: Text(commune))).toList(),
-            onChanged: _selectedCity == null
-                ? null
-                : (commune) {
-                    if (commune == null) return;
-                    setState(() => _selectedCommune = commune);
-                  },
-          ),
-          const SizedBox(height: 10),
-
-          const Text('Quartier *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _quartierController,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              hintText: 'Ex: Golf',
-              prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey.shade600, size: 20),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          const Text('Avenue / Rue *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _avenueController,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              hintText: 'Ex: Avenue Lumumba',
-              prefixIcon: Icon(Icons.signpost_outlined, color: Colors.grey.shade600, size: 20),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          const Text('Numéro d\'établissement *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _establishmentNumberController,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              hintText: 'Ex: N° 1425',
-              prefixIcon: Icon(Icons.tag, color: Colors.grey.shade600, size: 20),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          const Text('Référence / Point de repère *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _referenceController,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              hintText: 'Ex: En face de l\'Hôpital Général',
-              prefixIcon: Icon(Icons.signpost, color: Colors.grey.shade600, size: 20),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          Row(
-            children: [
-              Icon(Icons.home_work_outlined, color: Colors.blue.shade700, size: 18),
-              const SizedBox(width: 6),
-              const Text(
-                'Autres détails',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _labelController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              labelText: 'Libellé (ex: Domicile, Bureau)',
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              labelText: 'Nom complet *',
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              labelText: 'Téléphone *',
-            ),
-          ),
-
-          if (_validationError != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              _validationError!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ],
-          const SizedBox(height: 14),
-
-          if (_latitude != null && _longitude != null) ...[
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, color: Colors.green.shade700, size: 18),
-                      const SizedBox(width: 6),
-                      const Expanded(
-                        child: Text(
-                          'Coordonnées GPS (si disponibles)',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                        ),
-                      ),
-                      Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Latitude', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-                            Text(_latitude!.toStringAsFixed(4), style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Longitude', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-                            Text(_longitude!.toStringAsFixed(4), style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-          ],
-          SizedBox(
+          child: SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 42,
             child: ElevatedButton(
               onPressed: _isSaving ? null : _save,
               child: _isSaving
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
+                      height: 18,
+                      width: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Text('Enregistrer cette adresse'),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
