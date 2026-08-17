@@ -142,8 +142,8 @@ class _ProductScreenState extends State<ProductScreen> {
       await _cartService.addToCart(
         userId: userId,
         product: product,
-        color: product.colors[_selectedColorIndex],
-        size: product.sizes[_selectedSizeIndex],
+        color: product.colors.isNotEmpty ? product.colors[_selectedColorIndex] : '',
+        size: product.sizes.isNotEmpty ? product.sizes[_selectedSizeIndex] : '',
         quantity: _quantity,
       );
       if (!mounted) return;
