@@ -5,6 +5,12 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 
+const Sentry = require('@sentry/node');
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 0.1,
+});
+
 let serviceAccount;
 if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
   serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
@@ -28,6 +34,10 @@ const SHWARY_CALLBACK_TOKEN = process.env.SHWARY_CALLBACK_TOKEN;
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', service: 'davidstore-payment-server' });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.post('/api/shwary/pay', async (req, res) => {
@@ -85,6 +95,7 @@ app.post('/api/shwary/callback', async (req, res) => {
   try {
     if (req.query.token !== SHWARY_CALLBACK_TOKEN) {
       console.warn('Callback Shwary refuse : token invalide ou manquant');
+      Sentry.captureMessage('Callback Shwary refuse : token invalide', { level: 'warning' });
       return res.status(401).json({ error: 'Non autorise' });
     }
 
@@ -118,6 +129,7 @@ app.post('/api/shwary/callback', async (req, res) => {
 
     if (!transactionDoc) {
       console.warn(`Transaction inconnue reçue en callback après ${maxAttempts} tentatives: ${id}`);
+      Sentry.captureMessage(`Callback Shwary orphelin : transaction ${id} introuvable`, { level: 'error', extra: { payload: transaction } });
       // Filet de sécurité : on garde une trace du callback orphelin pour
       // réconciliation manuelle plutôt que de le perdre silencieusement.
       await db.collection('orphan_callbacks').doc(id).set({
@@ -139,10 +151,12 @@ app.post('/api/shwary/callback', async (req, res) => {
     if (orderId) {
       await db.collection('orders').doc(orderId).update({ paymentStatus: status });
     }
+    Sentry.captureMessage(`Callback Shwary traite : transaction ${id}, statut ${status}`, { level: 'info', extra: { orderId, status, failureReason } });
 
     res.status(200).json({ received: true });
   } catch (error) {
     console.error('Erreur callback Shwary:', error);
+    Sentry.captureException(error);
     res.status(500).json({ error: 'Erreur serveur lors du traitement du callback' });
   }
 });
