@@ -43,7 +43,7 @@ app.get('/health', (req, res) => {
 app.get('/api/shwary/test-status/:transactionId', async (req, res) => {
   try {
     const response = await fetch(
-      `https://api.shwary.com/merchants/transactions/${req.params.transactionId}`,
+      `https://api.shwary.com/api/v1/merchants/transactions/${req.params.transactionId}`,
       {
         headers: {
           'x-merchant-id': SHWARY_MERCHANT_ID,
