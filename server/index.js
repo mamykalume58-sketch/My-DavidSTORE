@@ -5,6 +5,7 @@ const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { getMessaging } = require('firebase-admin/messaging');
+const cors = require('cors');
 
 const Sentry = require('@sentry/node');
 Sentry.init({
@@ -64,6 +65,12 @@ async function sendBroadcastNotification(title, body, data) {
 }
 
 const app = express();
+app.use(cors({
+  origin: [
+    'https://dashboard-admin-pearl-one.vercel.app',
+    'http://localhost:5173',
+  ],
+}));
 app.use(express.json());
 
 const SHWARY_BASE_URL = 'https://api.shwary.com/api/v1';
