@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
+const { getMessaging } = require('firebase-admin/messaging');
 
 const Sentry = require('@sentry/node');
 Sentry.init({
@@ -22,6 +23,45 @@ if (!getApps().length) {
   initializeApp({ credential: cert(serviceAccount) });
 }
 const db = getFirestore();
+
+async function sendPushNotification(userId, title, body, data) {
+  try {
+    const userDoc = await db.collection('users').doc(userId).get();
+    const token = userDoc.data()?.fcmToken;
+    if (!token) return;
+
+    await getMessaging().send({
+      token,
+      notification: { title, body },
+      data: data || {},
+    });
+  } catch (error) {
+    console.error('Erreur envoi notification push:', error);
+    Sentry.captureException(error);
+  }
+}
+
+async function sendBroadcastNotification(title, body, data) {
+  try {
+    const usersSnapshot = await db.collection('users').where('fcmToken', '!=', null).get();
+    const tokens = usersSnapshot.docs
+      .map((doc) => doc.data().fcmToken)
+      .filter(Boolean);
+
+    if (tokens.length === 0) return { sent: 0 };
+
+    const response = await getMessaging().sendEachForMulticast({
+      tokens,
+      notification: { title, body },
+      data: data || {},
+    });
+    return { sent: response.successCount, failed: response.failureCount };
+  } catch (error) {
+    console.error('Erreur envoi notification broadcast:', error);
+    Sentry.captureException(error);
+    return { sent: 0, error: error.message };
+  }
+}
 
 const app = express();
 app.use(express.json());
@@ -170,6 +210,19 @@ app.post('/api/shwary/callback', async (req, res) => {
     const orderId = transactionDoc.data().orderId;
     if (orderId) {
       await db.collection('orders').doc(orderId).update({ paymentStatus: status });
+
+      if (status === 'completed') {
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+        const orderUserId = orderDoc.data()?.userId;
+        if (orderUserId) {
+          await sendPushNotification(
+            orderUserId,
+            'Paiement confirmé',
+            'Votre paiement a été confirmé, votre commande est en cours de préparation.',
+            { type: 'payment_completed', orderId }
+          );
+        }
+      }
     }
     Sentry.captureMessage(`Callback Shwary traite : transaction ${id}, statut ${status}`, { level: 'info', extra: { orderId, status, failureReason } });
 
@@ -218,6 +271,19 @@ app.get('/api/shwary/reconcile', async (req, res) => {
 
           if (tx.orderId) {
             await db.collection('orders').doc(tx.orderId).update({ paymentStatus: shwaryData.status });
+
+            if (shwaryData.status === 'completed') {
+              const orderDoc = await db.collection('orders').doc(tx.orderId).get();
+              const orderUserId = orderDoc.data()?.userId;
+              if (orderUserId) {
+                await sendPushNotification(
+                  orderUserId,
+                  'Paiement confirmé',
+                  'Votre paiement a été confirmé, votre commande est en cours de préparation.',
+                  { type: 'payment_completed', orderId: tx.orderId }
+                );
+              }
+            }
           }
 
           Sentry.captureMessage(`Reconciliation Shwary : transaction ${doc.id} mise a jour vers ${shwaryData.status}`, { level: 'info' });
@@ -374,6 +440,27 @@ app.get('/api/admin/users', async (req, res) => {
     res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 });
+app.post('/api/notify-new-product', async (req, res) => {
+  try {
+    const { productName } = req.body;
+    if (!productName) {
+      return res.status(400).json({ error: 'productName est requis' });
+    }
+
+    const result = await sendBroadcastNotification(
+      'Nouveau produit disponible',
+      `${productName} est maintenant disponible sur DavidSTORE.`,
+      { type: 'new_product' }
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error('Erreur /api/notify-new-product:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de l\'envoi de la notification' });
+  }
+});
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
