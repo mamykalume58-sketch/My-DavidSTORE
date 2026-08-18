@@ -88,6 +88,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           'amount': amount,
           'clientPhoneNumber': fullPhoneNumber,
           'userId': userId,
+          'paymentMethod': _methods[_selectedMethod]['name'],
         }),
       );
 

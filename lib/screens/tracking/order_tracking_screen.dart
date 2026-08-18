@@ -12,7 +12,7 @@ class OrderTrackingScreen extends StatelessWidget {
   const OrderTrackingScreen({super.key, this.orderId});
 
   static const List<Map<String, dynamic>> _flow = [
-    {'key': 'pending', 'title': 'Commande confirmée', 'desc': 'Ta commande a été confirmée.', 'icon': Icons.shopping_cart},
+    {'key': 'pending', 'title': 'Commande reçue', 'desc': 'Ta commande est en attente de confirmation du paiement.', 'icon': Icons.shopping_cart},
     {'key': 'preparing', 'title': 'Préparation en cours', 'desc': 'Ta commande est en cours de préparation.', 'icon': Icons.inventory_2},
     {'key': 'shipped', 'title': 'Expédiée', 'desc': 'Ta commande a été expédiée.', 'icon': Icons.local_shipping},
     {'key': 'in_transit', 'title': 'En transit', 'desc': 'Ta commande est en route vers ton adresse.', 'icon': Icons.location_on},

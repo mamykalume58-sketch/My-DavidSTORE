@@ -61,7 +61,7 @@ app.get('/api/shwary/test-status/:transactionId', async (req, res) => {
 
 app.post('/api/shwary/pay', async (req, res) => {
   try {
-    const { amount, clientPhoneNumber, orderId, sandbox } = req.body;
+    const { amount, clientPhoneNumber, orderId, sandbox, paymentMethod } = req.body;
 
     if (!amount || !clientPhoneNumber || !orderId) {
       return res.status(400).json({ error: 'amount, clientPhoneNumber et orderId sont requis' });
@@ -101,6 +101,7 @@ app.post('/api/shwary/pay', async (req, res) => {
     await db.collection('orders').doc(orderId).update({
       transactionId: data.id,
       paymentStatus: data.status || 'pending',
+      paymentMethod: paymentMethod || null,
     });
 
     res.json({ transactionId: data.id, status: data.status });

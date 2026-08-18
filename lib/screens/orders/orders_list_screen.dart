@@ -64,7 +64,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
       case 'cancelled':
         return {'label': 'Annulée', 'color': const Color(0xFFDC2626), 'bg': const Color(0xFFFEE2E2), 'icon': Icons.close};
       default:
-        return {'label': 'Confirmée', 'color': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5), 'icon': Icons.hourglass_empty};
+        return {'label': 'En attente', 'color': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5), 'icon': Icons.hourglass_empty};
     }
   }
 
