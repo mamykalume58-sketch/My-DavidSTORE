@@ -33,7 +33,7 @@ class OrderTrackingScreen extends StatelessWidget {
       case 'out_for_delivery':
         return {'label': 'Expédiée', 'color': const Color(0xFF2563EB), 'bg': const Color(0xFFDBEAFE)};
       default:
-        return {'label': 'Confirmée', 'color': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5)};
+        return {'label': 'En attente', 'color': const Color(0xFFC2410C), 'bg': const Color(0xFFFFEDD5)};
     }
   }
 
