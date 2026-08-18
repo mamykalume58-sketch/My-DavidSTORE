@@ -40,6 +40,20 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/shwary/test-status/:transactionId', async (req, res) => {
+  try {
+    const response = await fetch(
+      `https://app.shwary.com/api/merchants/transactions/${req.params.transactionId}`,
+      { headers: { Authorization: `Bearer ${SHWARY_MERCHANT_KEY}` } }
+    );
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error('Erreur test-status Shwary:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/shwary/pay', async (req, res) => {
   try {
     const { amount, clientPhoneNumber, orderId, sandbox } = req.body;
