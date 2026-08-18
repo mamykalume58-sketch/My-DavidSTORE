@@ -179,6 +179,63 @@ app.post('/api/shwary/callback', async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors du traitement du callback' });
   }
 });
+app.get('/api/shwary/reconcile', async (req, res) => {
+  try {
+    const cutoff = new Date(Date.now() - 3 * 60 * 1000); // 3 minutes
+    const snapshot = await db.collection('transactions')
+      .where('status', '==', 'pending')
+      .get();
+
+    const results = [];
+
+    for (const doc of snapshot.docs) {
+      const tx = doc.data();
+      const createdAt = tx.createdAt?.toDate?.();
+      if (!createdAt || createdAt > cutoff) continue;
+
+      try {
+        const shwaryResponse = await fetch(
+          `${SHWARY_BASE_URL}/merchants/transactions/${doc.id}`,
+          {
+            headers: {
+              'x-merchant-id': SHWARY_MERCHANT_ID,
+              'x-merchant-key': SHWARY_MERCHANT_KEY,
+            },
+          }
+        );
+        const shwaryData = await shwaryResponse.json();
+
+        if (shwaryResponse.ok && shwaryData.status && shwaryData.status !== 'pending') {
+          await doc.ref.update({
+            status: shwaryData.status,
+            failureReason: shwaryData.failureReason || null,
+            txHash: shwaryData.txHash || null,
+            completedAt: shwaryData.completedAt || null,
+            updatedAt: FieldValue.serverTimestamp(),
+            reconciledManually: true,
+          });
+
+          if (tx.orderId) {
+            await db.collection('orders').doc(tx.orderId).update({ paymentStatus: shwaryData.status });
+          }
+
+          Sentry.captureMessage(`Reconciliation Shwary : transaction ${doc.id} mise a jour vers ${shwaryData.status}`, { level: 'info' });
+          results.push({ id: doc.id, oldStatus: 'pending', newStatus: shwaryData.status });
+        }
+      } catch (err) {
+        console.error(`Erreur reconciliation transaction ${doc.id}:`, err);
+        Sentry.captureException(err);
+      }
+    }
+
+    res.json({ checked: snapshot.size, updated: results.length, results });
+  } catch (error) {
+    console.error('Erreur reconciliation:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de la reconciliation' });
+  }
+});
+
 app.get('/api/shwary/status/:transactionId', async (req, res) => {
   try {
     const { transactionId } = req.params;
