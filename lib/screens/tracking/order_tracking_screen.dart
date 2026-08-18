@@ -398,15 +398,15 @@ class OrderTrackingScreen extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: order.paymentStatus == 'paid' ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDD5),
+                                            color: order.paymentStatus == 'completed' ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDD5),
                                             borderRadius: BorderRadius.circular(20),
                                           ),
                                           child: Text(
-                                            order.paymentStatus == 'paid' ? 'Payé' : 'En attente',
+                                            order.paymentStatus == 'completed' ? 'Payé' : 'En attente',
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
-                                              color: order.paymentStatus == 'paid' ? const Color(0xFF16A34A) : const Color(0xFFC2410C),
+                                              color: order.paymentStatus == 'completed' ? const Color(0xFF16A34A) : const Color(0xFFC2410C),
                                             ),
                                           ),
                                         ),
