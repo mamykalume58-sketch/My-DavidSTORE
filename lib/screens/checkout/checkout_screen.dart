@@ -137,7 +137,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'total': total,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      }).timeout(const Duration(seconds: 15));
 
       if (!mounted) return;
       Navigator.pushNamed(

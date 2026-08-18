@@ -156,7 +156,8 @@ class AddressService {
     final snapshot = await _addresses
         .where('isDefault', isEqualTo: true)
         .limit(1)
-        .get();
+        .get()
+        .timeout(const Duration(seconds: 10));
 
     if (snapshot.docs.isEmpty) {
       return null;
