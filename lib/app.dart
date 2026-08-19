@@ -6,12 +6,15 @@ import 'config/routes.dart';
 import 'config/theme.dart';
 import 'screens/category_screen.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class DavidStoreApp extends StatelessWidget {
   const DavidStoreApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'DavidSTORE',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

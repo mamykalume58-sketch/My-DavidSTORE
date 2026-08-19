@@ -449,15 +449,15 @@ app.get('/api/admin/users', async (req, res) => {
 });
 app.post('/api/notify-new-product', async (req, res) => {
   try {
-    const { productName } = req.body;
+    const { productName, productId } = req.body;
     if (!productName) {
       return res.status(400).json({ error: 'productName est requis' });
     }
 
     const result = await sendBroadcastNotification(
-      'Nouveau produit disponible',
-      `${productName} est maintenant disponible sur DavidSTORE.`,
-      { type: 'new_product' }
+      '🎉 Nouveau produit disponible !',
+      `Découvrez ${productName} et commandez dès maintenant sur DavidSTORE.`,
+      { type: 'new_product', productId: productId || '' }
     );
 
     res.json(result);

@@ -5,6 +5,16 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 
+void _handleNotificationTap(RemoteMessage message) {
+  final type = message.data['type'];
+  if (type == 'new_product') {
+    navigatorKey.currentState?.pushNamed('/catalog');
+  } else if (type == 'payment_completed') {
+    final orderId = message.data['orderId'];
+    navigatorKey.currentState?.pushNamed('/tracking', arguments: {'orderId': orderId});
+  }
+}
+
 final FlutterLocalNotificationsPlugin _localNotifications =
     FlutterLocalNotificationsPlugin();
 
@@ -57,6 +67,15 @@ void main() async {
       );
     }
   });
+
+  FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleNotificationTap(initialMessage);
+    });
+  }
 
   runApp(const DavidStoreApp());
 }
