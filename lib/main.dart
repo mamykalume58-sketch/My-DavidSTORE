@@ -39,7 +39,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await _localNotifications.initialize(
-    const InitializationSettings(
+    initializationSettings: const InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
     ),
   );
@@ -52,10 +52,10 @@ void main() async {
     final notification = message.notification;
     if (notification != null) {
       _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _channel.id,
             _channel.name,
