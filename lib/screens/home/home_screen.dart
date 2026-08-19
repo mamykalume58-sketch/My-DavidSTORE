@@ -7,7 +7,7 @@ import '../../services/cart_service.dart';
 import '../../services/favorites_service.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/home_category_card.dart';
-import '../../widgets/promo_banner.dart';
+import '../../widgets/banner_carousel.dart';
 import '../../widgets/custom_bottom_nav_bar.dart';
 import '../../widgets/app_drawer.dart';
 
@@ -202,7 +202,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             SliverToBoxAdapter(
-              child: PromoBanner(onTap: () => Navigator.pushNamed(context, '/catalog')),
+              child: BannerCarousel(
+                onCategoryTap: (categoryName) => Navigator.pushNamed(context, '/category', arguments: categoryName),
+                onProductTap: (productId) async {
+                  final doc = await FirebaseFirestore.instance.collection('products').doc(productId).get();
+                  if (!doc.exists || !context.mounted) return;
+                  final data = doc.data()!;
+                  data['id'] = doc.id;
+                  final product = Product.fromMap(data);
+                  Navigator.pushNamed(context, '/product', arguments: product);
+                },
+              ),
             ),
 
             SliverToBoxAdapter(
