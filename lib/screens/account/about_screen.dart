@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+const String _fallbackAboutContent =
+    "DAVIDSTORE est votre boutique en ligne de confiance, proposant une large sélection de produits avec paiement via Airtel Money, M-Pesa et Orange Money, et une livraison rapide.";
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -40,9 +44,15 @@ class AboutScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: const Text(
-              "DAVIDSTORE est votre boutique en ligne de confiance, proposant une large sélection de produits avec paiement via Airtel Money, M-Pesa et Orange Money, et une livraison rapide.",
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.5),
+            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance.collection('contentPages').doc('about').snapshots(),
+              builder: (context, snapshot) {
+                final content = snapshot.data?.data()?['content'] as String? ?? _fallbackAboutContent;
+                return Text(
+                  content,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.5),
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),
