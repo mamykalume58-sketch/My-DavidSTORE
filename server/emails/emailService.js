@@ -6,6 +6,7 @@ const { orderReceivedEmail } = require('./templates/orderReceivedEmail');
 const { paymentConfirmedEmail } = require('./templates/paymentConfirmedEmail');
 const { deliveryCompletedEmail } = require('./templates/deliveryCompletedEmail');
 const { loginAlertEmail } = require('./templates/loginAlertEmail');
+const { orderPreparingEmail } = require('./templates/orderPreparingEmail');
 
 const TEMPLATES = {
   WELCOME: { render: welcomeEmail, subject: 'Bienvenue sur DavidSTORE' },
@@ -14,6 +15,7 @@ const TEMPLATES = {
   PAYMENT_CONFIRMED: { render: paymentConfirmedEmail, subject: (d) => `Paiement confirmé — Commande #${d.orderNumber}` },
   DELIVERY_COMPLETED: { render: deliveryCompletedEmail, subject: (d) => `Commande #${d.orderNumber} livrée avec succès` },
   LOGIN_ALERT: { render: loginAlertEmail, subject: 'Nouvelle connexion détectée — DavidSTORE' },
+  ORDER_PREPARING: { render: orderPreparingEmail, subject: (d) => `Commande #${d.orderNumber} en préparation` },
 };
 
 async function logEmailAttempt({ type, recipient, status, error, relatedUserId, relatedOrderId }) {

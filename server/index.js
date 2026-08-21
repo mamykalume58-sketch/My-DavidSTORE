@@ -559,6 +559,23 @@ app.post('/api/auth/login-alert', async (req, res) => {
   }
 });
 
+app.post('/api/test-email/:type', async (req, res) => {
+  if (req.query.token !== process.env.TEST_EMAIL_TOKEN) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  try {
+    const { to, data } = req.body;
+    if (!to) {
+      return res.status(400).json({ error: 'to est requis' });
+    }
+    const result = await sendTransactionalEmail({ type: req.params.type.toUpperCase(), to, data: data || {} });
+    res.json(result);
+  } catch (error) {
+    console.error('Erreur /api/test-email:', error);
+    res.status(500).json({ error: 'Erreur serveur lors du test email' });
+  }
+});
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
