@@ -246,7 +246,7 @@ app.post('/api/shwary/callback', async (req, res) => {
             Sentry.captureException(emailError);
           }
         }
-} else if (status === 'failed') {
+      } else if (status === 'failed') {
         const orderDoc = await db.collection('orders').doc(orderId).get();
         const orderUserId = orderDoc.data()?.userId;
         if (orderUserId) {
@@ -325,6 +325,40 @@ app.get('/api/shwary/reconcile', async (req, res) => {
                   'Votre paiement a été confirmé, votre commande est en cours de préparation.',
                   { type: 'payment_completed', orderId: tx.orderId }
                 );
+
+                try {
+                  const orderNumber = orderDoc.data()?.orderNumber || tx.orderId;
+                  const customerEmail = (await getAuth().getUser(orderUserId)).email;
+                  if (customerEmail) {
+                    await sendTransactionalEmail({
+                      type: 'PAYMENT_CONFIRMED',
+                      to: customerEmail,
+                      data: { orderNumber, amount: orderDoc.data()?.amount, paymentMethod: orderDoc.data()?.paymentMethod },
+                    });
+                  }
+                } catch (emailError) {
+                  console.error('Erreur envoi email confirmation paiement (reconcile):', emailError);
+                  Sentry.captureException(emailError);
+                }
+              }
+            } else if (shwaryData.status === 'failed') {
+              const orderDoc = await db.collection('orders').doc(tx.orderId).get();
+              const orderUserId = orderDoc.data()?.userId;
+              if (orderUserId) {
+                try {
+                  const orderNumber = orderDoc.data()?.orderNumber || tx.orderId;
+                  const customerEmail = (await getAuth().getUser(orderUserId)).email;
+                  if (customerEmail) {
+                    await sendTransactionalEmail({
+                      type: 'PAYMENT_FAILED',
+                      to: customerEmail,
+                      data: { orderNumber, reason: shwaryData.failureReason || null },
+                    });
+                  }
+                } catch (emailError) {
+                  console.error('Erreur envoi email echec paiement (reconcile):', emailError);
+                  Sentry.captureException(emailError);
+                }
               }
             }
           }
