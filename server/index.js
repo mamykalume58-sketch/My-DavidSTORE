@@ -6,6 +6,8 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { getMessaging } = require('firebase-admin/messaging');
 const cors = require('cors');
+const { sendTransactionalEmail } = require('./emails/emailService');
+const { parseUserAgent } = require('./emails/parseUserAgent');
 
 const Sentry = require('@sentry/node');
 Sentry.init({
@@ -465,6 +467,59 @@ app.post('/api/notify-new-product', async (req, res) => {
     console.error('Erreur /api/notify-new-product:', error);
     Sentry.captureException(error);
     res.status(500).json({ error: 'Erreur serveur lors de l\'envoi de la notification' });
+  }
+});
+
+app.post('/api/auth/welcome', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'email est requis' });
+    }
+
+    await sendTransactionalEmail({ type: 'WELCOME', to: email, data: { name } });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/auth/welcome:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de l\'envoi de l\'email de bienvenue' });
+  }
+});
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'email est requis' });
+    }
+
+    const device = parseUserAgent(req.headers['user-agent']);
+    let location = 'Inconnu';
+    try {
+      const clientIp = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
+      const geoRes = await fetch(`https://ipapi.co/${clientIp}/json/`);
+      const geoData = await geoRes.json();
+      if (geoData && geoData.city) {
+        location = `${geoData.city}, ${geoData.country_name || ''}`.trim();
+      }
+    } catch (geoError) {
+      console.error('Erreur geolocalisation IP:', geoError);
+    }
+
+    const actionCodeSettings = {
+      url: 'https://davidstore-757d8.firebaseapp.com',
+      handleCodeInApp: false,
+    };
+    const resetLink = await getAuth().generatePasswordResetLink(email, actionCodeSettings);
+    const when = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Kinshasa' }) + ' (heure de Kinshasa)';
+    await sendTransactionalEmail({ type: 'PASSWORD_RESET', to: email, data: { resetLink, device, location, when } });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/auth/forgot-password:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de la reinitialisation du mot de passe' });
   }
 });
 
