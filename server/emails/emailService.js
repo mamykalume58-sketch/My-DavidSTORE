@@ -8,6 +8,7 @@ const { deliveryCompletedEmail } = require('./templates/deliveryCompletedEmail')
 const { loginAlertEmail } = require('./templates/loginAlertEmail');
 const { orderPreparingEmail } = require('./templates/orderPreparingEmail');
 const { orderShippedEmail } = require('./templates/orderShippedEmail');
+const { driverNearbyEmail } = require('./templates/driverNearbyEmail');
 
 const TEMPLATES = {
   WELCOME: { render: welcomeEmail, subject: 'Bienvenue sur DavidSTORE' },
@@ -18,6 +19,7 @@ const TEMPLATES = {
   LOGIN_ALERT: { render: loginAlertEmail, subject: 'Nouvelle connexion détectée — DavidSTORE' },
   ORDER_PREPARING: { render: orderPreparingEmail, subject: (d) => `Commande #${d.orderNumber} en préparation` },
   ORDER_SHIPPED: { render: orderShippedEmail, subject: (d) => `Commande #${d.orderNumber} expédiée` },
+  DRIVER_NEARBY: { render: driverNearbyEmail, subject: (d) => `Votre livreur arrive — Commande #${d.orderNumber}` },
 };
 
 async function logEmailAttempt({ type, recipient, status, error, relatedUserId, relatedOrderId }) {
