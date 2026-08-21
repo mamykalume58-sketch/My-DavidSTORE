@@ -523,6 +523,42 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
+app.post('/api/auth/login-alert', async (req, res) => {
+  try {
+    const { email, uid } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'email est requis' });
+    }
+
+    const device = parseUserAgent(req.headers['user-agent']);
+    const clientIp = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
+    let location = 'Inconnu';
+    try {
+      const geoRes = await fetch(`https://ipapi.co/${clientIp}/json/`);
+      const geoData = await geoRes.json();
+      if (geoData && geoData.city) {
+        location = `${geoData.city}, ${geoData.country_name || ''}`.trim();
+      }
+    } catch (geoError) {
+      console.error('Erreur geolocalisation IP:', geoError);
+    }
+
+    const actionCodeSettings = {
+      url: 'https://davidstore-757d8.firebaseapp.com',
+      handleCodeInApp: false,
+    };
+    const resetLink = await getAuth().generatePasswordResetLink(email, actionCodeSettings);
+    const when = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Kinshasa' }) + ' (heure de Kinshasa)';
+    await sendTransactionalEmail({ type: 'LOGIN_ALERT', to: email, data: { device, location, ip: clientIp, when, resetLink }, relatedUserId: uid });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/auth/login-alert:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: "Erreur serveur lors de l'alerte de connexion" });
+  }
+});
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
