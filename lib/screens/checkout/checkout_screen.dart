@@ -5,6 +5,8 @@ import '../../theme/app_theme.dart';
 import '../../services/cart_service.dart';
 import '../../services/address_service.dart';
 import '../../widgets/address_form_sheet.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -138,6 +140,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }).timeout(const Duration(seconds: 15));
+
+      try {
+        await http.post(
+          Uri.parse('https://davidstore-payment.vercel.app/api/orders/notify-received'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': FirebaseAuth.instance.currentUser?.email,
+            'name': _selectedAddress?['name'] ?? (FirebaseAuth.instance.currentUser?.displayName ?? ''),
+            'orderNumber': 'DS-${DateTime.now().year}-${orderRef.id.substring(0, 6).toUpperCase()}',
+            'total': total,
+            'paymentMethod': _deliveryOptions[_selectedDelivery]['label'],
+            'deliveryAddress': {
+              'address': _selectedAddress?['address'] ?? '',
+              'commune': _selectedAddress?['commune'],
+              'city': _selectedAddress?['city'] ?? '',
+            },
+          }),
+        );
+      } catch (_) {
+        // Ne bloque jamais la commande si l'email echoue
+      }
 
       if (!mounted) return;
       Navigator.pushNamed(

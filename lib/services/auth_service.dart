@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'device_service.dart';
 import 'notification_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -37,6 +39,15 @@ class AuthService {
       );
       await _deviceService.registerCurrentDevice();
       await _notificationService.registerFcmToken();
+      try {
+        await http.post(
+          Uri.parse('https://davidstore-payment.vercel.app/api/auth/welcome'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email}),
+        );
+      } catch (_) {
+        // Ne bloque jamais l'inscription si l'email de bienvenue echoue
+      }
       return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
