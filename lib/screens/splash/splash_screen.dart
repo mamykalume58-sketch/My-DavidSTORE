@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/session_service.dart';
+import '../../main.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -29,6 +30,11 @@ class _SplashScreenState extends State<SplashScreen> {
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     if (!mounted) return;
+
+    if (pendingDeepLinkUri != null) {
+      pendingDeepLinkUri = null;
+      return;
+    }
 
     if (!hasSeenOnboarding) {
       Navigator.pushReplacementNamed(

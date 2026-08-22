@@ -16,9 +16,12 @@ void _handleNotificationTap(RemoteMessage message) {
   }
 }
 
+Uri? pendingDeepLinkUri;
+
 void _handleDeepLink(Uri uri) {
   final segments = uri.pathSegments;
   if (segments.length >= 2 && segments[0] == 'orders') {
+    pendingDeepLinkUri = uri;
     final orderId = segments[1];
     navigatorKey.currentState?.pushNamed('/order-detail', arguments: {'orderId': orderId});
   }
