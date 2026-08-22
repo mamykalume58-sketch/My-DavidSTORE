@@ -5,6 +5,7 @@ import 'screens/splash/splash_screen.dart';
 import 'config/routes.dart';
 import 'config/theme.dart';
 import 'screens/category_screen.dart';
+import 'screens/tracking/order_tracking_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -26,6 +27,20 @@ class DavidStoreApp extends StatelessWidget {
 
           return MaterialPageRoute(
             builder: (_) => CategoryScreen(categoryName: categoryName),
+          );
+        }
+
+        if (settings.name == '/order-detail') {
+          final args = settings.arguments;
+          String? orderId;
+          if (args is Map) {
+            orderId = args['orderId']?.toString();
+          } else if (args != null) {
+            orderId = args.toString();
+          }
+
+          return MaterialPageRoute(
+            builder: (_) => OrderTrackingScreen(orderId: orderId),
           );
         }
 

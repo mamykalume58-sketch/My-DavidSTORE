@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:app_links/app_links.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 
@@ -11,7 +12,15 @@ void _handleNotificationTap(RemoteMessage message) {
     navigatorKey.currentState?.pushNamed('/catalog');
   } else if (type == 'payment_completed') {
     final orderId = message.data['orderId'];
-    navigatorKey.currentState?.pushNamed('/tracking', arguments: {'orderId': orderId});
+    navigatorKey.currentState?.pushNamed('/order-detail', arguments: {'orderId': orderId});
+  }
+}
+
+void _handleDeepLink(Uri uri) {
+  final segments = uri.pathSegments;
+  if (segments.length >= 2 && segments[0] == 'orders') {
+    final orderId = segments[1];
+    navigatorKey.currentState?.pushNamed('/order-detail', arguments: {'orderId': orderId});
   }
 }
 
@@ -74,6 +83,15 @@ void main() async {
   if (initialMessage != null) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleNotificationTap(initialMessage);
+    });
+  }
+
+  final appLinks = AppLinks();
+  appLinks.uriLinkStream.listen(_handleDeepLink);
+  final initialUri = await appLinks.getInitialLink();
+  if (initialUri != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleDeepLink(initialUri);
     });
   }
 
