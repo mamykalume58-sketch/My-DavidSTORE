@@ -30,6 +30,10 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Signing report (SHA256 debug key)
+        working-directory: android
+        run: ./gradlew signingReport
+
       - name: Build APK
         run: flutter build apk --release
 
