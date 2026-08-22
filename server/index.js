@@ -117,15 +117,29 @@ app.get('/api/shwary/test-status/:transactionId', async (req, res) => {
 
 app.post('/api/shwary/pay', async (req, res) => {
   try {
-    const { amount, clientPhoneNumber, orderId, sandbox, paymentMethod } = req.body;
+    const { clientPhoneNumber, orderId, paymentMethod } = req.body;
 
-    if (!amount || !clientPhoneNumber || !orderId) {
-      return res.status(400).json({ error: 'amount, clientPhoneNumber et orderId sont requis' });
+    if (!clientPhoneNumber || !orderId) {
+      return res.status(400).json({ error: 'clientPhoneNumber et orderId sont requis' });
     }
 
-    const endpoint = sandbox
-      ? `${SHWARY_BASE_URL}/merchants/payment/sandbox/DRC`
-      : `${SHWARY_BASE_URL}/merchants/payment/DRC`;
+    // Securite : le montant est TOUJOURS recalcule depuis Firestore, jamais
+    // fourni par le client. sandbox est FORCE en dur, jamais controlable par le client.
+    const orderDoc = await db.collection('orders').doc(orderId).get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Commande introuvable' });
+    }
+    const orderData = orderDoc.data();
+    const amount = orderData.total;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Montant de la commande invalide' });
+    }
+    if (orderData.paymentStatus === 'completed') {
+      return res.status(409).json({ error: 'Cette commande a deja ete payee' });
+    }
+
+    const sandbox = false;
+    const endpoint = `${SHWARY_BASE_URL}/merchants/payment/DRC`;
 
     const shwaryResponse = await fetch(endpoint, {
       method: 'POST',
