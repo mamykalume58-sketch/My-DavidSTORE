@@ -245,7 +245,7 @@ app.post('/api/shwary/callback', async (req, res) => {
               await sendTransactionalEmail({
                 type: 'PAYMENT_CONFIRMED',
                 to: customerEmail,
-                data: { orderNumber, amount: orderDoc.data()?.amount, paymentMethod: orderDoc.data()?.paymentMethod },
+                data: { orderId, orderNumber, amount: orderDoc.data()?.total, paymentMethod: orderDoc.data()?.paymentMethod },
               });
             }
           } catch (emailError) {
@@ -340,7 +340,7 @@ app.get('/api/shwary/reconcile', async (req, res) => {
                     await sendTransactionalEmail({
                       type: 'PAYMENT_CONFIRMED',
                       to: customerEmail,
-                      data: { orderNumber, amount: orderDoc.data()?.amount, paymentMethod: orderDoc.data()?.paymentMethod },
+                      data: { orderId, orderNumber, amount: orderDoc.data()?.total, paymentMethod: orderDoc.data()?.paymentMethod },
                     });
                   }
                 } catch (emailError) {
@@ -691,7 +691,7 @@ app.post('/api/orders/:orderId/notify-driver-nearby', async (req, res) => {
 
 app.post('/api/orders/notify-received', async (req, res) => {
   try {
-    const { email, name, orderNumber, total, paymentMethod, deliveryAddress } = req.body;
+    const { email, name, orderId, orderNumber, total, paymentMethod, deliveryAddress } = req.body;
     if (!email || !orderNumber) {
       return res.status(400).json({ error: 'email et orderNumber sont requis' });
     }
@@ -704,7 +704,7 @@ app.post('/api/orders/notify-received', async (req, res) => {
     await sendTransactionalEmail({
       type: 'ORDER_RECEIVED',
       to: email,
-      data: { name, orderNumber, date, total, paymentMethod: paymentMethod || 'Non precise', deliveryAddress: addressLabel },
+      data: { name, orderId, orderNumber, date, total, paymentMethod: paymentMethod || 'Non precise', deliveryAddress: addressLabel },
     });
 
     res.json({ success: true });
@@ -750,7 +750,7 @@ app.post('/api/orders/:orderId/notify-status', async (req, res) => {
       return res.json({ skipped: true, reason: 'Email client introuvable' });
     }
 
-    let data = { orderNumber, ...(extra || {}) };
+    let data = { orderId, orderNumber, ...(extra || {}) };
     if (templateType === 'DELIVERY_COMPLETED') {
       data.deliveryDate = new Date().toLocaleDateString('fr-FR', { timeZone: 'Africa/Kinshasa' });
     }

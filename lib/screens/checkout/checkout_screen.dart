@@ -148,6 +148,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           body: jsonEncode({
             'email': FirebaseAuth.instance.currentUser?.email,
             'name': _selectedAddress?['name'] ?? (FirebaseAuth.instance.currentUser?.displayName ?? ''),
+            'orderId': orderRef.id,
             'orderNumber': 'DS-${DateTime.now().year}-${orderRef.id.substring(0, 6).toUpperCase()}',
             'total': total,
             'paymentMethod': _deliveryOptions[_selectedDelivery]['label'],

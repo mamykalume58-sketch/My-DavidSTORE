@@ -1,7 +1,7 @@
 const { wrapEmail } = require('../emailLayout');
 const { title, paragraph, infoCard, infoRow, button, securityNote } = require('../emailRenderer');
 
-function orderReceivedEmail({ name, orderNumber, date, total, paymentMethod, deliveryAddress }) {
+function orderReceivedEmail({ name, orderId, orderNumber, date, total, paymentMethod, deliveryAddress }) {
   const greeting = name ? `Bonjour ${name},` : 'Bonjour,';
   const body = `
     ${title(`Votre commande #${orderNumber} a été reçue`)}
@@ -13,7 +13,7 @@ function orderReceivedEmail({ name, orderNumber, date, total, paymentMethod, del
       infoRow('Paiement', paymentMethod) +
       infoRow('Livraison', deliveryAddress, { last: true })
     )}
-    ${button('Suivre ma commande', 'https://davidstore-757d8.firebaseapp.com/orders')}
+    ${button('Suivre ma commande', `https://davidstore-payment.vercel.app/orders/${orderId}`)}
     ${securityNote('Vous recevrez une confirmation à chaque étape de votre commande.')}
   `;
   return wrapEmail({ title: `Commande #${orderNumber} reçue`, bodyHtml: body });
