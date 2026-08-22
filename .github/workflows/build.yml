@@ -30,12 +30,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Build APK
+        run: flutter build apk --release
+
       - name: Signing report (SHA256 debug key)
         working-directory: android
         run: ./gradlew signingReport
-
-      - name: Build APK
-        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
