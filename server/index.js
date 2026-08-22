@@ -89,6 +89,13 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/.well-known/assetlinks.json', (req, res) => {
+  res.sendFile(__dirname + '/.well-known/assetlinks.json', {
+    dotfiles: 'allow',
+    headers: { 'Content-Type': 'application/json' },
+  });
+});
+
 app.get('/api/shwary/test-status/:transactionId', async (req, res) => {
   try {
     const response = await fetch(
