@@ -5,6 +5,44 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../models/order.dart';
 import '../../utils/price_formatter.dart';
+import 'confirm_delivery_screen.dart';
+
+String _paymentStatusLabel(String status) {
+  switch (status) {
+    case 'completed':
+      return 'Payé';
+    case 'failed':
+      return 'Échoué';
+    case 'cancelled':
+      return 'Annulé';
+    default:
+      return 'En attente';
+  }
+}
+
+Color _paymentStatusBgColor(String status) {
+  switch (status) {
+    case 'completed':
+      return const Color(0xFFDCFCE7);
+    case 'failed':
+    case 'cancelled':
+      return const Color(0xFFFEE2E2);
+    default:
+      return const Color(0xFFFFEDD5);
+  }
+}
+
+Color _paymentStatusTextColor(String status) {
+  switch (status) {
+    case 'completed':
+      return const Color(0xFF16A34A);
+    case 'failed':
+    case 'cancelled':
+      return const Color(0xFFDC2626);
+    default:
+      return const Color(0xFFC2410C);
+  }
+}
 
 class OrderTrackingScreen extends StatelessWidget {
   final String? orderId;
@@ -398,20 +436,49 @@ class OrderTrackingScreen extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: order.paymentStatus == 'completed' ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDD5),
+                                            color: _paymentStatusBgColor(order.paymentStatus),
                                             borderRadius: BorderRadius.circular(20),
                                           ),
                                           child: Text(
-                                            order.paymentStatus == 'completed' ? 'Payé' : 'En attente',
+                                            _paymentStatusLabel(order.paymentStatus),
                                             style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
-                                              color: order.paymentStatus == 'completed' ? const Color(0xFF16A34A) : const Color(0xFFC2410C),
+                                              color: _paymentStatusTextColor(order.paymentStatus),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
+                                    if (order.paymentStatus == 'completed' && order.status != 'delivered' && order.status != 'cancelled') ...[
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () async {
+                                            final confirmed = await Navigator.push<bool>(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => ConfirmDeliveryScreen(orderId: order.id),
+                                              ),
+                                            );
+                                            if (confirmed == true) {
+                                              // ignore: use_build_context_synchronously
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('Livraison confirmée !')),
+                                              );
+                                            }
+                                          },
+                                          icon: const Icon(Icons.qr_code_scanner),
+                                          label: const Text('Confirmer la réception'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.orangeDark,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
