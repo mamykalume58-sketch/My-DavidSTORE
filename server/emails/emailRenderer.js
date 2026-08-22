@@ -34,8 +34,8 @@ function infoCard(rowsHtml) {
 }
 
 function button(label, url) {
-  return `<a href="${escapeHtml(url)}" style="display:block;background:${COLORS.gold};border-radius:8px;padding:12px;text-align:center;text-decoration:none;margin-bottom:20px;" target="_blank">
-    <span style="font-size:14px;font-weight:600;color:${COLORS.navy} !important;mso-line-height-rule:exactly;">${escapeHtml(label)}</span>
+  return `<a href="${escapeHtml(url)}" style="display:block;background:${COLORS.navy};border-radius:8px;padding:12px;text-align:center;text-decoration:none;margin-bottom:20px;" target="_blank">
+    <span style="font-size:14px;font-weight:600;color:${COLORS.white} !important;mso-line-height-rule:exactly;">${escapeHtml(label)}</span>
   </a>`;
 }
 
