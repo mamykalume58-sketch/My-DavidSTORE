@@ -6,6 +6,7 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
 const { getMessaging } = require('firebase-admin/messaging');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const { sendTransactionalEmail } = require('./emails/emailService');
 const { parseUserAgent } = require('./emails/parseUserAgent');
 
@@ -41,7 +42,16 @@ async function requireAuth(req, res, next) {
   } catch (error) {
     return res.status(401).json({ error: 'Token invalide' });
   }
+
 }
+
+const supportChatLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  message: { error: 'Trop de messages envoyes, reessayez dans quelques minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 async function sendPushNotification(userId, title, body, data) {
   try {
@@ -504,12 +514,15 @@ async function searchProductsInFirestore(query) {
   return matches.slice(0, 5);
 }
 
-app.post('/api/support-chat', async (req, res) => {
+app.post('/api/support-chat', supportChatLimiter, async (req, res) => {
   try {
     const { message, history } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'message est requis' });
+    }
+    if (message.length > 1000) {
+      return res.status(400).json({ error: 'Message trop long (maximum 1000 caracteres)' });
     }
 
     const model = genAI.getGenerativeModel({
