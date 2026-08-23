@@ -142,9 +142,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }).timeout(const Duration(seconds: 15));
 
       try {
+        final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
         await http.post(
           Uri.parse('https://davidstore-payment.vercel.app/api/orders/notify-received'),
-          headers: {'Content-Type': 'application/json'},
+          headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $idToken'},
           body: jsonEncode({
             'email': FirebaseAuth.instance.currentUser?.email,
             'name': _selectedAddress?['name'] ?? (FirebaseAuth.instance.currentUser?.displayName ?? ''),

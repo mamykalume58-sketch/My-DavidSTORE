@@ -27,6 +27,22 @@ if (!getApps().length) {
 }
 const db = getFirestore();
 
+async function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!idToken) {
+    return res.status(401).json({ error: 'Authentification requise' });
+  }
+  try {
+    const decoded = await getAuth().verifyIdToken(idToken);
+    req.uid = decoded.uid;
+    req.isAdmin = decoded.admin === true;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Token invalide' });
+  }
+}
+
 async function sendPushNotification(userId, title, body, data) {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
@@ -538,7 +554,7 @@ app.get('/api/admin/users', async (req, res) => {
     res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 });
-app.post('/api/notify-new-product', async (req, res) => {
+app.post('/api/notify-new-product', requireAuth, async (req, res) => {
   try {
     const { productName, productId } = req.body;
     if (!productName) {
@@ -665,7 +681,7 @@ app.post('/api/test-email/:type', async (req, res) => {
   }
 });
 
-app.post('/api/orders/:orderId/notify-driver-nearby', async (req, res) => {
+app.post('/api/orders/:orderId/notify-driver-nearby', requireAuth, async (req, res) => {
   try {
     const { orderId } = req.params;
     const orderDoc = await db.collection('orders').doc(orderId).get();
@@ -703,7 +719,7 @@ app.post('/api/orders/:orderId/notify-driver-nearby', async (req, res) => {
   }
 });
 
-app.post('/api/orders/notify-received', async (req, res) => {
+app.post('/api/orders/notify-received', requireAuth, async (req, res) => {
   try {
     const { email, name, orderId, orderNumber, total, paymentMethod, deliveryAddress } = req.body;
     if (!email || !orderNumber) {
@@ -736,7 +752,7 @@ const STATUS_EMAIL_MAP = {
   cancelled: 'ORDER_CANCELLED',
 };
 
-app.post('/api/orders/:orderId/notify-status', async (req, res) => {
+app.post('/api/orders/:orderId/notify-status', requireAuth, async (req, res) => {
   try {
     const { orderId } = req.params;
     const { status, extra } = req.body;
