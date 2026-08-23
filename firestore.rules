@@ -45,7 +45,7 @@ service cloud.firestore {
       allow update: if request.auth != null &&
         request.auth.uid == resource.data.driverId &&
         request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'verificationCode']) &&
+          .hasOnly(['status', 'verificationCode', 'acceptedByDriver']) &&
         (!('status' in request.resource.data.diff(resource.data).affectedKeys()) ||
           request.resource.data.status == 'out_for_delivery');
     }
