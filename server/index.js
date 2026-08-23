@@ -139,6 +139,11 @@ app.post('/api/shwary/pay', async (req, res) => {
       return res.status(400).json({ error: 'clientPhoneNumber et orderId sont requis' });
     }
 
+    // Validation stricte du format telephone congolais (+243 suivi de 9 chiffres)
+    if (!/^\+243\d{9}$/.test(clientPhoneNumber)) {
+      return res.status(400).json({ error: 'Numero de telephone invalide (format attendu: +243XXXXXXXXX)' });
+    }
+
     // Securite : le montant est TOUJOURS recalcule depuis Firestore, jamais
     // fourni par le client. sandbox est FORCE en dur, jamais controlable par le client.
     const orderDoc = await db.collection('orders').doc(orderId).get();
