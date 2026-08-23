@@ -190,6 +190,14 @@ app.post('/api/shwary/pay', async (req, res) => {
       paymentMethod: paymentMethod || null,
     });
 
+    await db.collection('securityLogs').add({
+      action: 'payment_created',
+      userId: orderData.userId || null,
+      targetId: orderId,
+      timestamp: FieldValue.serverTimestamp(),
+      metadata: { amount, transactionId: data.id },
+    });
+
     res.json({ transactionId: data.id, status: data.status });
   } catch (error) {
     console.error('Erreur initiation paiement:', error);
@@ -272,6 +280,13 @@ app.post('/api/shwary/callback', async (req, res) => {
             const orderNumber = orderDoc.data()?.orderNumber || orderId;
             const customerEmail = (await getAuth().getUser(orderUserId)).email;
             if (customerEmail) {
+              await db.collection('securityLogs').add({
+                action: 'payment_confirmed',
+                userId: orderUserId,
+                targetId: orderId,
+                timestamp: FieldValue.serverTimestamp(),
+                metadata: { amount: orderDoc.data()?.total },
+              });
               await sendTransactionalEmail({
                 type: 'PAYMENT_CONFIRMED',
                 to: customerEmail,
@@ -291,6 +306,13 @@ app.post('/api/shwary/callback', async (req, res) => {
             const orderNumber = orderDoc.data()?.orderNumber || orderId;
             const customerEmail = (await getAuth().getUser(orderUserId)).email;
             if (customerEmail) {
+              await db.collection('securityLogs').add({
+                action: 'payment_failed',
+                userId: orderUserId,
+                targetId: orderId,
+                timestamp: FieldValue.serverTimestamp(),
+                metadata: { reason: failureReason || null },
+              });
               await sendTransactionalEmail({
                 type: 'PAYMENT_FAILED',
                 to: customerEmail,
@@ -554,6 +576,40 @@ app.get('/api/admin/users', async (req, res) => {
     res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 });
+
+app.post('/api/admin/users/:uid/disable', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) {
+      return res.status(401).json({ error: 'Token manquant' });
+    }
+    const decoded = await getAuth().verifyIdToken(token);
+    if (decoded.admin !== true) {
+      return res.status(403).json({ error: 'Accès réservé aux administrateurs' });
+    }
+
+    const { uid } = req.params;
+    const { disabled } = req.body;
+    if (typeof disabled !== 'boolean') {
+      return res.status(400).json({ error: 'Le champ disabled (boolean) est requis' });
+    }
+
+    await getAuth().updateUser(uid, { disabled });
+    await db.collection('securityLogs').add({
+      action: disabled ? 'account_disabled' : 'account_enabled',
+      userId: decoded.uid,
+      targetId: uid,
+      timestamp: FieldValue.serverTimestamp(),
+    });
+
+    res.json({ success: true, disabled });
+  } catch (error) {
+    console.error('Erreur /api/admin/users/:uid/disable:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la mise a jour du compte' });
+  }
+});
+
 app.post('/api/notify-new-product', requireAuth, async (req, res) => {
   try {
     const { productName, productId } = req.body;
