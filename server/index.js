@@ -342,6 +342,9 @@ app.post('/api/shwary/callback', async (req, res) => {
 });
 app.get('/api/shwary/reconcile', async (req, res) => {
   try {
+    if (req.query.token !== process.env.RECONCILE_TOKEN) {
+      return res.status(401).json({ error: 'Non autorise' });
+    }
     const cutoff = new Date(Date.now() - 3 * 60 * 1000); // 3 minutes
     const snapshot = await db.collection('transactions')
       .where('status', '==', 'pending')
