@@ -45,7 +45,7 @@ service cloud.firestore {
       allow update: if request.auth != null &&
         request.auth.uid == resource.data.driverId &&
         request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['status', 'verificationCode', 'acceptedByDriver']) &&
+          .hasOnly(['status', 'verificationCode', 'acceptedByDriver', 'deliveredAt']) &&
         (!('status' in request.resource.data.diff(resource.data).affectedKeys()) ||
           request.resource.data.status == 'out_for_delivery');
     }
@@ -53,6 +53,18 @@ service cloud.firestore {
     match /livreurs/{livreurId} {
       allow read, write: if request.auth != null &&
         (request.auth.uid == livreurId || request.auth.token.admin == true);
+    }
+
+    match /notifications/{notificationId} {
+      // Le livreur ne peut lire/supprimer que ses propres notifications.
+      allow read, delete: if request.auth != null &&
+        request.auth.uid == resource.data.driverId;
+
+      // Seul l'admin (dashboard) peut creer des notifications.
+      allow create: if request.auth != null && request.auth.token.admin == true;
+
+      // Pas de modification (pas de statut "lu" pour l'instant).
+      allow update: if false;
     }
 
     match /banners/{bannerId} {
