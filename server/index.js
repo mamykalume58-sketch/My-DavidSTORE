@@ -53,6 +53,14 @@ const supportChatLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const paymentLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  message: { error: 'Trop de tentatives de paiement, reessayez dans quelques minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 async function sendPushNotification(userId, title, body, data) {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
@@ -141,7 +149,7 @@ app.get('/api/shwary/test-status/:transactionId', async (req, res) => {
   }
 });
 
-app.post('/api/shwary/pay', async (req, res) => {
+app.post('/api/shwary/pay', paymentLimiter, async (req, res) => {
   try {
     const { clientPhoneNumber, orderId, paymentMethod } = req.body;
 
@@ -652,7 +660,7 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/auth/welcome', async (req, res) => {
+app.post('/api/auth/welcome', paymentLimiter, async (req, res) => {
   try {
     const { email, name } = req.body;
     if (!email) {
@@ -669,7 +677,7 @@ app.post('/api/auth/welcome', async (req, res) => {
   }
 });
 
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', paymentLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -705,7 +713,29 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login-alert', async (req, res) => {
+app.post('/api/auth/send-verification', paymentLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'email est requis' });
+    }
+
+    const actionCodeSettings = {
+      url: 'https://davidstore-757d8.firebaseapp.com',
+      handleCodeInApp: false,
+    };
+    const verificationLink = await getAuth().generateEmailVerificationLink(email, actionCodeSettings);
+    await sendTransactionalEmail({ type: 'EMAIL_VERIFICATION', to: email, data: { verificationLink } });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/auth/send-verification:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de l\'envoi de la verification' });
+  }
+});
+
+app.post('/api/auth/login-alert', paymentLimiter, async (req, res) => {
   try {
     const { email, uid } = req.body;
     if (!email) {

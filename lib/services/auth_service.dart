@@ -37,6 +37,15 @@ class AuthService {
         email: email,
         password: password,
       );
+      try {
+        await http.post(
+          Uri.parse('https://davidstore-payment.vercel.app/api/auth/send-verification'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email}),
+        );
+      } catch (_) {
+        // Ne bloque jamais l'inscription si l'envoi de verification echoue
+      }
       await _deviceService.registerCurrentDevice();
       await _notificationService.registerFcmToken();
       try {
