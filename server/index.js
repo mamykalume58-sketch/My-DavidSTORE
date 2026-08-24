@@ -286,7 +286,7 @@ app.post('/api/shwary/callback', async (req, res) => {
 
     const orderId = transactionDoc.data().orderId;
     if (orderId) {
-      await db.collection('orders').doc(orderId).update({ paymentStatus: status });
+      await db.collection('orders').doc(orderId).update({ paymentStatus: status, failureReason: failureReason || null });
 
       if (status === 'completed') {
         const orderDoc = await db.collection('orders').doc(orderId).get();
@@ -398,7 +398,7 @@ app.get('/api/shwary/reconcile', async (req, res) => {
           });
 
           if (tx.orderId) {
-            await db.collection('orders').doc(tx.orderId).update({ paymentStatus: shwaryData.status });
+            await db.collection('orders').doc(tx.orderId).update({ paymentStatus: shwaryData.status, failureReason: shwaryData.failureReason || null });
 
             if (shwaryData.status === 'completed') {
               const orderDoc = await db.collection('orders').doc(tx.orderId).get();
