@@ -100,6 +100,23 @@ async function sendBroadcastNotification(title, body, data) {
   }
 }
 
+async function sendPushToDriver(driverId, title, body, data) {
+  try {
+    const driverDoc = await db.collection('livreurs').doc(driverId).get();
+    const token = driverDoc.data()?.fcmToken;
+    if (!token) return;
+
+    await getMessaging().send({
+      token,
+      notification: { title, body },
+      data: data || {},
+    });
+  } catch (error) {
+    console.error('Erreur envoi notification push livreur:', error);
+    Sentry.captureException(error);
+  }
+}
+
 const app = express();
 app.use(cors({
   origin: [
@@ -899,6 +916,35 @@ app.post('/api/orders/:orderId/notify-status', requireAuth, async (req, res) => 
     console.error('Erreur /api/orders/notify-status:', error);
     Sentry.captureException(error);
     res.status(500).json({ error: 'Erreur serveur lors de la notification de statut' });
+  }
+});
+
+app.post('/api/orders/:orderId/notify-driver', requireAuth, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { type, title, body } = req.body;
+
+    if (!title || !body) {
+      return res.status(400).json({ error: 'title et body requis' });
+    }
+
+    const orderDoc = await db.collection('orders').doc(orderId).get();
+    if (!orderDoc.exists) {
+      return res.status(404).json({ error: 'Commande introuvable' });
+    }
+
+    const driverId = orderDoc.data()?.driverId;
+    if (!driverId) {
+      return res.json({ skipped: true, reason: 'driverId absent de la commande' });
+    }
+
+    await sendPushToDriver(driverId, title, body, { type: type || 'generic', orderId });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/orders/notify-driver:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de la notification livreur' });
   }
 });
 
