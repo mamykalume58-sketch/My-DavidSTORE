@@ -1,4 +1,4 @@
-package com.example.davidstore
+package com.davidstore.davidstore_client
 
 import io.flutter.embedding.android.FlutterActivity
 

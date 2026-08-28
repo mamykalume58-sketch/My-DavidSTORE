@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.davidstore"
+    namespace = "com.davidstore.davidstore_client"
     compileSdk = flutter.compileSdkVersion
 
     compileOptions {
@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.davidstore"
+        applicationId = "com.davidstore.davidstore_client"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
