@@ -10,6 +10,8 @@ import '../../widgets/home_category_card.dart';
 import '../../widgets/banner_carousel.dart';
 import '../../widgets/custom_bottom_nav_bar.dart';
 import '../../widgets/app_drawer.dart';
+import '../../services/version_service.dart';
+import '../../widgets/update_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +35,19 @@ class _HomeScreenState extends State<HomeScreen> {
     {'label': 'Maison', 'icon': Icons.home_outlined},
     {'label': 'Plus', 'icon': Icons.more_horiz},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+  }
+
+  Future<void> _checkForUpdate() async {
+    final info = await VersionService().checkForUpdate();
+    if (info != null && mounted) {
+      showUpdateDialog(context, info: info);
+    }
+  }
 
   void _addToCart(Product product) {
     final userId = _userId;
