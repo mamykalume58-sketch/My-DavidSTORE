@@ -378,7 +378,8 @@ class OrderTrackingScreen extends StatelessWidget {
                                           if (order.deliveryPerson.phone.isNotEmpty)
                                             OutlinedButton.icon(
                                               onPressed: () async {
-                                                final uri = Uri.parse('tel:${order.deliveryPerson.phone}');
+                                                final cleanPhone = order.deliveryPerson.phone.replaceAll(RegExp(r'[^0-9]'), '');
+                                                final uri = Uri.parse('https://wa.me/$cleanPhone');
                                                 if (await canLaunchUrl(uri)) await launchUrl(uri);
                                               },
                                               icon: const Icon(Icons.call, size: 14, color: Color(0xFF2563EB)),
