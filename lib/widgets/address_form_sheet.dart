@@ -685,7 +685,7 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Téléphone *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          const Text('Numéro WhatsApp *', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                           TextField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,

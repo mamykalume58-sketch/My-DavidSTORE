@@ -348,7 +348,9 @@ class OrderTrackingScreen extends StatelessWidget {
                                             radius: 20,
                                             backgroundColor: const Color(0xFFF1F5F9),
                                             backgroundImage: order.deliveryPerson.photoUrl.isNotEmpty
-                                                ? NetworkImage(order.deliveryPerson.photoUrl)
+                                                ? MemoryImage(base64Decode(order.deliveryPerson.photoUrl.contains(',')
+                                                    ? order.deliveryPerson.photoUrl.split(',').last
+                                                    : order.deliveryPerson.photoUrl))
                                                 : null,
                                             child: order.deliveryPerson.photoUrl.isEmpty
                                                 ? const Icon(Icons.person, color: Colors.grey)
