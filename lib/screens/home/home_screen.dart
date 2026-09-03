@@ -122,11 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _launch(Uri uri) async {
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -174,10 +169,6 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569)),
             onPressed: () => Navigator.pushNamed(context, '/cart'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF475569)),
-            onPressed: () => _launch(Uri.parse('https://wa.me/243995289355')),
           ),
           const SizedBox(width: 4),
         ],

@@ -66,18 +66,9 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
 
             Image.asset(
-              'assets/images/splash_bag.png',
-              width: 220,
+              'assets/images/splash_text.png',
+              width: 260,
               fit: BoxFit.contain,
-            ),
-
-            Transform.translate(
-              offset: const Offset(0, -45),
-              child: Image.asset(
-                'assets/images/splash_text.png',
-                width: 260,
-                fit: BoxFit.contain,
-              ),
             ),
 
             const SizedBox(height: 70),
