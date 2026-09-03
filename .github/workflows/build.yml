@@ -39,6 +39,9 @@ jobs:
           echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
 
+      - name: Générer les icônes de l'application
+        run: dart run flutter_launcher_icons
+
       - name: Build APK
         run: flutter build apk --release
 
