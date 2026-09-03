@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../models/order.dart';
 import '../../utils/price_formatter.dart';
 import 'confirm_delivery_screen.dart';
+import '../../services/driver_tracking_service.dart';
 
 String _paymentStatusLabel(String status) {
   switch (status) {
@@ -374,6 +375,25 @@ class OrderTrackingScreen extends StatelessWidget {
                                                     ],
                                                   ],
                                                 ),
+                                                if (order.driverId != null) ...[
+                                                  const SizedBox(height: 4),
+                                                  StreamBuilder<DriverTrackingInfo?>(
+                                                    stream: DriverTrackingService().watchDriver(order.driverId!),
+                                                    builder: (context, snapshot) {
+                                                      final info = snapshot.data;
+                                                      if (info == null) return const SizedBox.shrink();
+                                                      final label = info.isEnRoute ? 'En route' : (info.status == 'disponible' ? 'Disponible' : 'Hors ligne');
+                                                      final color = info.isEnRoute ? const Color(0xFF16A34A) : Colors.grey.shade400;
+                                                      return Row(
+                                                        children: [
+                                                          Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                                                          const SizedBox(width: 4),
+                                                          Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+                                                        ],
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                                               ],
                                             ),
                                           ),

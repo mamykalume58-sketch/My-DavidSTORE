@@ -90,6 +90,7 @@ class OrderModel {
   final String paymentReference;
   final String paymentStatus;
   final DeliveryPerson deliveryPerson;
+  final String? driverId;
   final DateTime? createdAt;
 
   const OrderModel({
@@ -107,6 +108,7 @@ class OrderModel {
     this.paymentReference = '',
     this.paymentStatus = '',
     this.deliveryPerson = const DeliveryPerson(),
+    this.driverId,
     this.createdAt,
   });
 
@@ -129,6 +131,7 @@ class OrderModel {
       paymentReference: map['paymentReference']?.toString() ?? '',
       paymentStatus: map['paymentStatus']?.toString() ?? '',
       deliveryPerson: DeliveryPerson.fromMap(map['deliveryPerson'] as Map<String, dynamic>?),
+      driverId: map['driverId']?.toString(),
       createdAt: (map['createdAt'] is Timestamp)
           ? (map['createdAt'] as Timestamp).toDate()
           : null,
@@ -151,6 +154,7 @@ class OrderModel {
       'paymentReference': paymentReference,
       'paymentStatus': paymentStatus,
       'deliveryPerson': deliveryPerson.toMap(),
+      'driverId': driverId,
     };
   }
 }
