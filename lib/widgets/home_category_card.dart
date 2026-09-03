@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class HomeCategoryCard extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final String imagePath;
   final VoidCallback onTap;
 
   const HomeCategoryCard({
     super.key,
     required this.label,
-    required this.icon,
+    required this.imagePath,
     required this.onTap,
   });
 
@@ -29,12 +29,12 @@ class HomeCategoryCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: primaryColor, size: 24),
+              child: Image.asset(imagePath, width: 28, height: 28, fit: BoxFit.contain),
             ),
             const SizedBox(height: 8),
             Text(

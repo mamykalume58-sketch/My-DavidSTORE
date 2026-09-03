@@ -28,12 +28,12 @@ class _HomeScreenState extends State<HomeScreen> {
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
   static const List<Map<String, dynamic>> _categories = [
-    {'label': 'Ordinateurs', 'icon': Icons.laptop_mac},
-    {'label': 'Téléphones', 'icon': Icons.smartphone},
-    {'label': 'Mode', 'icon': Icons.checkroom},
-    {'label': 'Électronique', 'icon': Icons.cable},
-    {'label': 'Maison', 'icon': Icons.home_outlined},
-    {'label': 'Plus', 'icon': Icons.more_horiz},
+    {'label': 'Ordinateurs', 'image': 'assets/images/categories/cat_ordinateurs.png'},
+    {'label': 'Téléphones', 'image': 'assets/images/categories/cat_telephones.png'},
+    {'label': 'Mode', 'image': 'assets/images/categories/cat_mode.png'},
+    {'label': 'Électronique', 'image': 'assets/images/categories/cat_electronique.png'},
+    {'label': 'Maison', 'image': 'assets/images/categories/cat_maison.png'},
+    {'label': 'Plus', 'image': 'assets/images/categories/cat_plus.png'},
   ];
 
   @override
@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     final cat = _categories[index];
                     return HomeCategoryCard(
                       label: cat['label'] as String,
-                      icon: cat['icon'] as IconData,
+                      imagePath: cat['image'] as String,
                       onTap: () {
                         if (cat['label'] == 'Plus') {
                           Navigator.pushNamed(context, '/catalog');
