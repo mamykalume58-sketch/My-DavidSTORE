@@ -118,6 +118,7 @@ async function sendPushToDriver(driverId, title, body, data) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors({
   origin: [
     'https://dashboard-admin-pearl-one.vercel.app',
