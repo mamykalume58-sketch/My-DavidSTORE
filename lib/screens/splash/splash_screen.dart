@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkSessionAndRedirect() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 5));
 
     final hasSeenOnboarding =
         await SessionService.hasSeenOnboarding();
@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF87CEEB),
+      backgroundColor: const Color(0xFF3D4FE0),
 
       body: Center(
         child: Column(
@@ -67,12 +67,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
             Image.asset(
               'assets/images/splash_bag.png',
-              width: 160,
+              width: 220,
               fit: BoxFit.contain,
             ),
 
             Transform.translate(
-              offset: const Offset(0, -18),
+              offset: const Offset(0, -45),
               child: Image.asset(
                 'assets/images/splash_text.png',
                 width: 260,
