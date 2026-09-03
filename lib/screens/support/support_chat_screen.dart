@@ -46,8 +46,19 @@ class _ChatMessage {
   final String role; // 'user' ou 'model'
   final String text;
   final List<_SuggestedProduct> products;
-  _ChatMessage({required this.role, required this.text, this.products = const []});
+  final bool isError;
+  _ChatMessage({
+    required this.role,
+    required this.text,
+    this.products = const [],
+    this.isError = false,
+  });
 }
+
+const _kBg = Color(0xFFF4F6F9);
+const _kInk = Color(0xFF1E293B);
+const _kMuted = Color(0xFF64748B);
+const _kOnline = Color(0xFF22C55E);
 
 class _SupportChatScreenState extends State<SupportChatScreen> {
   final TextEditingController _controller = TextEditingController();
@@ -58,12 +69,18 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   static const String _apiUrl =
       'https://davidstore-payment.vercel.app/api/support-chat';
 
+  static const List<String> _quickReplies = [
+    'Voir les promos',
+    'Suivre ma commande',
+    'Parler à un humain',
+  ];
+
   Widget _buildProductImage(String? source) {
     if (source == null || source.isEmpty) {
       return Container(
-        color: Colors.grey.shade100,
+        color: const Color(0xFFF1F5F9),
         alignment: Alignment.center,
-        child: const Text('📦', style: TextStyle(fontSize: 28)),
+        child: Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 26),
       );
     }
     try {
@@ -77,15 +94,15 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       }
     } catch (_) {
       return Container(
-        color: Colors.grey.shade100,
+        color: const Color(0xFFF1F5F9),
         alignment: Alignment.center,
-        child: const Text('📦', style: TextStyle(fontSize: 28)),
+        child: Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 26),
       );
     }
   }
 
-  Future<void> _sendMessage() async {
-    final text = _controller.text.trim();
+  Future<void> _sendMessage([String? preset]) async {
+    final text = (preset ?? _controller.text).trim();
     if (text.isEmpty || _isLoading) return;
 
     setState(() {
@@ -131,6 +148,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           _messages.add(_ChatMessage(
             role: 'model',
             text: "Désolée, une erreur est survenue. Réessaie ou contacte le support WhatsApp.",
+            isError: true,
           ));
         });
       }
@@ -139,6 +157,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         _messages.add(_ChatMessage(
           role: 'model',
           text: "Impossible de me contacter pour le moment. Vérifie ta connexion.",
+          isError: true,
         ));
       });
     } finally {
@@ -159,193 +178,432 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     });
   }
 
+  Widget _avatar({double size = 34}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: const Color(0xFF3D4FE0),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        'N',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: size * 0.42,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: _kBg,
       appBar: AppBar(
         elevation: 0,
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.white,
-        title: const Text('Nicole — Assistante DAVIDSTORE',
-            style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 15)),
-        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            _avatar(),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Nicole',
+                      style: TextStyle(color: _kInk, fontWeight: FontWeight.w700, fontSize: 15)),
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(color: _kOnline, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 5),
+                      const Text('Conseillère DavidSTORE',
+                          style: TextStyle(color: _kMuted, fontSize: 11.5, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        iconTheme: const IconThemeData(color: _kInk),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE7EAF0)),
+        ),
       ),
       body: Column(
         children: [
           Expanded(
             child: _messages.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Text(
-                        "Bonjour 👋 Je suis Nicole, de l'équipe DAVIDSTORE.\nPose-moi une question sur nos produits, commandes ou livraisons.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-                      ),
-                    ),
-                  )
+                ? _buildEmptyState()
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length,
+                    padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
+                    itemCount: _messages.length + (_isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index == _messages.length) {
+                        return _buildTypingRow();
+                      }
                       final msg = _messages[index];
                       final isUser = msg.role == 'user';
-                      return Column(
-                        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                        children: [
-                          Align(
-                            alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                              decoration: BoxDecoration(
-                                color: isUser ? theme.primaryColor : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2)),
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Column(
+                          crossAxisAlignment:
+                              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (!isUser) ...[
+                                  _avatar(size: 26),
+                                  const SizedBox(width: 8),
                                 ],
-                              ),
-                              child: Text(
-                                msg.text,
-                                style: TextStyle(color: isUser ? Colors.white : const Color(0xFF1E293B), fontSize: 14),
-                              ),
-                            ),
-                          ),
-                          if (msg.products.isNotEmpty)
-                            SizedBox(
-                              height: 190,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: msg.products.length,
-                                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                                itemBuilder: (context, i) {
-                                  final p = msg.products[i];
-                                  return Container(
-                                    width: 140,
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    constraints: BoxConstraints(
+                                        maxWidth: MediaQuery.of(context).size.width * 0.72),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: [
-                                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 3)),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-                                          child: SizedBox(
-                                            height: 90,
-                                            width: double.infinity,
-                                            child: _buildProductImage(p.image),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                p.name,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                '${p.price} FC',
-                                                style: TextStyle(fontSize: 11, color: theme.primaryColor, fontWeight: FontWeight.w700),
-                                              ),
-                                              const SizedBox(height: 6),
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: OutlinedButton(
-                                                  style: OutlinedButton.styleFrom(
-                                                    padding: const EdgeInsets.symmetric(vertical: 4),
-                                                    minimumSize: const Size(0, 28),
-                                                  ),
-                                                  onPressed: () {
-                                                    Navigator.pushNamed(
-                                                      context,
-                                                      '/product',
-                                                      arguments: Product.fromMap({
-                                                        'id': p.id,
-                                                        'name': p.name,
-                                                        'price': p.price,
-                                                        'promoPrice': p.promoPrice,
-                                                        'category': p.category,
-                                                        'description': p.description,
-                                                        'images': p.image != null ? [p.image] : [],
-                                                        'stock': 1,
-                                                        'active': true,
-                                                      }),
-                                                    );
-                                                  },
-                                                  child: const Text('Voir', style: TextStyle(fontSize: 11)),
-                                                ),
+                                      color: isUser
+                                          ? theme.primaryColor
+                                          : msg.isError
+                                              ? const Color(0xFFFFF1F0)
+                                              : Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: const Radius.circular(16),
+                                        topRight: const Radius.circular(16),
+                                        bottomLeft: Radius.circular(isUser ? 16 : 4),
+                                        bottomRight: Radius.circular(isUser ? 4 : 16),
+                                      ),
+                                      border: msg.isError
+                                          ? Border.all(color: const Color(0xFFFFD4D0))
+                                          : null,
+                                      boxShadow: isUser || msg.isError
+                                          ? null
+                                          : [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.04),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
                                               ),
                                             ],
-                                          ),
-                                        ),
-                                      ],
                                     ),
-                                  );
-                                },
-                              ),
+                                    child: Text(
+                                      msg.text,
+                                      style: TextStyle(
+                                        color: isUser
+                                            ? Colors.white
+                                            : msg.isError
+                                                ? const Color(0xFFB3261E)
+                                                : _kInk,
+                                        fontSize: 14,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                        ],
+                            if (msg.products.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                height: 210,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.only(left: 34),
+                                  itemCount: msg.products.length,
+                                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                                  itemBuilder: (context, i) => _buildProductCard(msg.products[i]),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       );
                     },
                   ),
           ),
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
+          _buildInputBar(theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+      children: [
+        _avatar(size: 56),
+        const SizedBox(height: 16),
+        const Text(
+          'Bonjour, je suis Nicole 👋',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: _kInk, fontSize: 17, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Votre conseillère DavidSTORE. Posez-moi une question sur nos produits,\nvos commandes ou la livraison.",
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 13.5, height: 1.5),
+        ),
+        const SizedBox(height: 24),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          children: _quickReplies
+              .map((label) => OutlinedButton(
+                    onPressed: () => _sendMessage(label),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _kInk,
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: Text(label, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500)),
+                  ))
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypingRow() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _avatar(size: 26),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+                bottomLeft: Radius.circular(4),
               ),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2)),
+              ],
             ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: 'Écris ton message...',
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
+            child: const _TypingDots(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductCard(_SuggestedProduct p) {
+    final hasPromo = p.promoPrice != null && p.promoPrice! > 0 && p.promoPrice! < p.price;
+    return Container(
+      width: 140,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            child: SizedBox(
+              height: 92,
+              width: double.infinity,
+              child: _buildProductImage(p.image),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  p.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _kInk),
+                ),
+                const SizedBox(height: 3),
+                if (hasPromo) ...[
+                  Row(
+                    children: [
+                      Text(
+                        '${p.price} FC',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade400,
+                          decoration: TextDecoration.lineThrough,
                         ),
                       ),
-                      onSubmitted: (_) => _sendMessage(),
-                    ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: _sendMessage,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: theme.primaryColor, shape: BoxShape.circle),
-                      child: const Icon(Icons.send, color: Colors.white, size: 20),
-                    ),
+                  Text(
+                    '${p.promoPrice} FC',
+                    style: const TextStyle(fontSize: 11.5, color: Color(0xFFD8402A), fontWeight: FontWeight.w700),
                   ),
-                ],
-              ),
+                ] else
+                  Text(
+                    '${p.price} FC',
+                    style: const TextStyle(fontSize: 11.5, color: Color(0xFF3D4FE0), fontWeight: FontWeight.w700),
+                  ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _kInk,
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      minimumSize: const Size(0, 30),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/product',
+                        arguments: Product.fromMap({
+                          'id': p.id,
+                          'name': p.name,
+                          'price': p.price,
+                          'promoPrice': p.promoPrice,
+                          'category': p.category,
+                          'description': p.description,
+                          'images': p.image != null ? [p.image] : [],
+                          'stock': 1,
+                          'active': true,
+                        }),
+                      );
+                    },
+                    child: const Text('Voir le produit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInputBar(ThemeData theme) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFE7EAF0))),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _controller,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  hintText: 'Écrivez votre message...',
+                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                  filled: true,
+                  fillColor: _kBg,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: _isLoading ? null : () => _sendMessage(),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _isLoading ? theme.primaryColor.withValues(alpha: 0.4) : theme.primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TypingDots extends StatefulWidget {
+  const _TypingDots();
+
+  @override
+  State<_TypingDots> createState() => _TypingDotsState();
+}
+
+class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 34,
+      height: 8,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(3, (i) {
+              final t = (_controller.value - (i * 0.2)) % 1.0;
+              final scale = 0.6 + 0.4 * (1 - (t - 0.5).abs() * 2).clamp(0.0, 1.0);
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(color: Color(0xFF94A3B8), shape: BoxShape.circle),
+                ),
+              );
+            }),
+          );
+        },
       ),
     );
   }
