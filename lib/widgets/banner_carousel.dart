@@ -107,6 +107,8 @@ class _BannerCarouselState extends State<BannerCarousel> {
                     final imageUrl = banner['imageUrl'] as String? ?? '';
                     final title = banner['title'] as String? ?? '';
                     final subtitle = banner['subtitle'] as String? ?? '';
+                    final badge = banner['badge'] as String? ?? '';
+                    final buttonText = banner['buttonText'] as String? ?? '';
                     final titleColor = _parseColor(banner['textColor'] as String?, Colors.white);
                     final subtitleColorRaw = banner['subtitleColor'] as String?;
                     final subtitleColor = (subtitleColorRaw == null || subtitleColorRaw.isEmpty)
@@ -119,6 +121,9 @@ class _BannerCarouselState extends State<BannerCarousel> {
                     final gradOpacity = (banner['overlayOpacity'] as num?)?.toDouble() ?? 0.55;
                     final imageAlign = _imageAlignment(banner['imagePosition'] as String?);
                     final zoom = 1.0 + ((banner['imageScale'] as num?)?.toDouble() ?? 0.0);
+                    final accentColor = _parseColor(banner['accentColor'] as String?, const Color(0xFFD85A30));
+                    final linkValue = banner['linkValue'] as String? ?? '';
+                    final hasLink = linkValue.isNotEmpty;
 
                     Widget imageWidget = const SizedBox.shrink();
                     if (imageUrl.startsWith('data:image')) {
@@ -168,36 +173,73 @@ class _BannerCarouselState extends State<BannerCarousel> {
                             Positioned(
                               left: 20,
                               right: 20,
-                              top: 0,
-                              bottom: 0,
+                              top: 16,
+                              bottom: 16,
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  if (badge.isNotEmpty) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        badge,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.4,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                  ],
                                   if (title.isNotEmpty)
                                     Text(
                                       title,
-                                      maxLines: 3,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: titleColor,
-                                        fontSize: 18,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        height: 1.2,
+                                        height: 1.15,
                                         shadows: const [Shadow(blurRadius: 4, color: Colors.black38)],
                                       ),
                                     ),
                                   if (subtitle.isNotEmpty) ...[
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 4),
                                     Text(
                                       subtitle,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: subtitleColor,
-                                        fontSize: 12.5,
-                                        height: 1.35,
+                                        fontSize: 12,
+                                        height: 1.3,
                                         shadows: const [Shadow(blurRadius: 3, color: Colors.black38)],
+                                      ),
+                                    ),
+                                  ],
+                                  if (hasLink && buttonText.isNotEmpty) ...[
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        buttonText,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ],
