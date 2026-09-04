@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -43,6 +44,40 @@ class _BannerCarouselState extends State<BannerCarousel> {
     return value != null ? Color(value) : fallback;
   }
 
+  Alignment _gradientBegin(double angleDeg) {
+    final rad = angleDeg * pi / 180;
+    return Alignment(-sin(rad), cos(rad));
+  }
+
+  Alignment _gradientEnd(double angleDeg) {
+    final rad = angleDeg * pi / 180;
+    return Alignment(sin(rad), -cos(rad));
+  }
+
+  Alignment _imageAlignment(String? position) {
+    switch (position) {
+      case 'top-left':
+        return Alignment.topLeft;
+      case 'top-center':
+        return Alignment.topCenter;
+      case 'top-right':
+        return Alignment.topRight;
+      case 'center-left':
+        return Alignment.centerLeft;
+      case 'center':
+        return Alignment.center;
+      case 'bottom-left':
+        return Alignment.bottomLeft;
+      case 'bottom-center':
+        return Alignment.bottomCenter;
+      case 'bottom-right':
+        return Alignment.bottomRight;
+      case 'center-right':
+      default:
+        return Alignment.centerRight;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -59,7 +94,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
         final banners = snapshot.data!.docs.map((d) => d.data()).toList();
 
         return SizedBox(
-          height: 150,
+          height: 200,
           child: Column(
             children: [
               Expanded(
@@ -71,44 +106,102 @@ class _BannerCarouselState extends State<BannerCarousel> {
                     final banner = banners[index];
                     final imageUrl = banner['imageUrl'] as String? ?? '';
                     final title = banner['title'] as String? ?? '';
-                    final textColor = _parseColor(banner['textColor'] as String?, Colors.white);
-                    final bgColor = _parseColor(banner['backgroundColor'] as String?, const Color(0xFF2563EB));
+                    final subtitle = banner['subtitle'] as String? ?? '';
+                    final titleColor = _parseColor(banner['textColor'] as String?, Colors.white);
+                    final subtitleColorRaw = banner['subtitleColor'] as String?;
+                    final subtitleColor = (subtitleColorRaw == null || subtitleColorRaw.isEmpty)
+                        ? titleColor
+                        : _parseColor(subtitleColorRaw, titleColor);
+                    final fallbackBg = _parseColor(banner['backgroundColor'] as String?, const Color(0xFF0057B8));
+                    final gradFrom = _parseColor(banner['overlayFrom'] as String?, fallbackBg);
+                    final gradTo = _parseColor(banner['overlayTo'] as String?, fallbackBg);
+                    final gradAngle = (banner['overlayAngle'] as num?)?.toDouble() ?? 180;
+                    final gradOpacity = (banner['overlayOpacity'] as num?)?.toDouble() ?? 0.55;
+                    final imageAlign = _imageAlignment(banner['imagePosition'] as String?);
+                    final zoom = 1 + ((banner['imageScale'] as num?)?.toDouble() ?? 0);
 
                     Widget imageWidget = const SizedBox.shrink();
                     if (imageUrl.startsWith('data:image')) {
                       try {
                         final base64Str = imageUrl.split(',').last;
-                        imageWidget = Image.memory(base64Decode(base64Str), fit: BoxFit.cover);
+                        imageWidget = Image.memory(
+                          base64Decode(base64Str),
+                          fit: BoxFit.cover,
+                          alignment: imageAlign,
+                        );
                       } catch (_) {}
                     } else if (imageUrl.isNotEmpty) {
-                      imageWidget = Image.network(imageUrl, fit: BoxFit.cover);
+                      imageWidget = Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        alignment: imageAlign,
+                      );
                     }
 
                     return GestureDetector(
                       onTap: () => _handleTap(banner),
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 6),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: bgColor,
-                        ),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
                         clipBehavior: Clip.antiAlias,
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Opacity(opacity: 0.9, child: imageWidget),
-                            Positioned(
-                              left: 16,
-                              bottom: 16,
-                              right: 16,
-                              child: Text(
-                                title,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  shadows: const [Shadow(blurRadius: 4, color: Colors.black38)],
+                            if (imageUrl.isNotEmpty)
+                              Transform.scale(
+                                scale: zoom,
+                                alignment: imageAlign,
+                                child: imageWidget,
+                              ),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: _gradientBegin(gradAngle),
+                                  end: _gradientEnd(gradAngle),
+                                  colors: [
+                                    gradFrom.withValues(alpha: gradOpacity),
+                                    gradTo.withValues(alpha: gradOpacity),
+                                  ],
                                 ),
+                              ),
+                            ),
+                            Positioned(
+                              left: 20,
+                              right: 20,
+                              top: 0,
+                              bottom: 0,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (title.isNotEmpty)
+                                    Text(
+                                      title,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: titleColor,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.2,
+                                        shadows: const [Shadow(blurRadius: 4, color: Colors.black38)],
+                                      ),
+                                    ),
+                                  if (subtitle.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      subtitle,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: subtitleColor,
+                                        fontSize: 12.5,
+                                        height: 1.35,
+                                        shadows: const [Shadow(blurRadius: 3, color: Colors.black38)],
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                           ],
