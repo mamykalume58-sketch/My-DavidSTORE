@@ -118,7 +118,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                     final gradAngle = (banner['overlayAngle'] as num?)?.toDouble() ?? 180;
                     final gradOpacity = (banner['overlayOpacity'] as num?)?.toDouble() ?? 0.55;
                     final imageAlign = _imageAlignment(banner['imagePosition'] as String?);
-                    final zoom = 1 + ((banner['imageScale'] as num?)?.toDouble() ?? 0);
+                    final zoom = 1.0 + ((banner['imageScale'] as num?)?.toDouble() ?? 0.0);
 
                     Widget imageWidget = const SizedBox.shrink();
                     if (imageUrl.startsWith('data:image')) {
