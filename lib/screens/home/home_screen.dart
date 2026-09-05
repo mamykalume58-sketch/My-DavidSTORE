@@ -1,4 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../models/product.dart';
+import '../../services/cart_service.dart';
+import '../../services/favorites_service.dart';
+import '../../widgets/product_card.dart';
+import '../../widgets/home_category_card.dart';
+import '../../widgets/banner_carousel.dart';
+import '../../widgets/custom_bottom_nav_bar.dart';
+import '../../widgets/app_drawer.dart';
+import '../../services/version_service.dart';
+import '../../widgets/update_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -7,360 +20,337 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _CategoryItem {
-  final String label;
-  final IconData icon;
-  const _CategoryItem(this.label, this.icon);
-}
-
-class _ProductItem {
-  final String name;
-  final String price;
-  final IconData icon;
-  const _ProductItem(this.name, this.price, this.icon);
-}
-
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentNavIndex = 0;
+  String _searchQuery = '';
+  final CartService _cartService = CartService();
+  final FavoritesService _favoritesService = FavoritesService();
 
-  static const orange = Color(0xFFFF6B35);
-  static const navy = Color(0xFF0A1030);
+  String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
-  final List<_CategoryItem> _categories = const [
-    _CategoryItem('Téléphones', Icons.smartphone),
-    _CategoryItem('Mode', Icons.checkroom),
-    _CategoryItem('Électronique', Icons.headphones),
-    _CategoryItem('Maison', Icons.chair),
-    _CategoryItem('Beauté', Icons.spa),
+  static const List<Map<String, dynamic>> _categories = [
+    {'label': 'Ordinateurs', 'image': 'assets/images/categories/cat_ordinateurs.png'},
+    {'label': 'Téléphones', 'image': 'assets/images/categories/cat_telephones.png'},
+    {'label': 'Mode', 'image': 'assets/images/categories/cat_mode.png'},
+    {'label': 'Électronique', 'image': 'assets/images/categories/cat_electronique.png'},
+    {'label': 'Maison', 'image': 'assets/images/categories/cat_maison.png'},
+    {'label': 'Plus', 'image': 'assets/images/categories/cat_plus.png'},
   ];
 
-  final List<_ProductItem> _bestSellers = const [
-    _ProductItem('Smartphone Samsung A14', '450 000 FC', Icons.smartphone),
-    _ProductItem('Montre connectée', '150 000 FC', Icons.watch),
-    _ProductItem('Casque Bluetooth', '150 000 FC', Icons.headphones),
-    _ProductItem('Chaussures Sport', '95 000 FC', Icons.sports_soccer),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+  }
 
-  void _onNavTap(int index) {
-    setState(() {
-      _currentNavIndex = index;
-    });
-
-    switch (index) {
-      case 1:
-        Navigator.pushNamed(context, '/catalog');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/cart');
-        break;
-      case 3:
-        Navigator.pushNamed(context, '/profile');
-        break;
-      default:
-        break;
+  Future<void> _checkForUpdate() async {
+    try {
+      final info = await VersionService().checkForUpdate();
+      if (info != null && mounted) {
+        showUpdateDialog(context, info: info);
+      }
+    } catch (_) {
+      // Ne bloque jamais l'app si la vérification de mise à jour echoue
     }
   }
 
+  void _addToCart(Product product) {
+    final userId = _userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connecte-toi pour ajouter au panier.')),
+      );
+      return;
+    }
+    _cartService.addToCart(
+      userId: userId,
+      product: product,
+      color: product.colors.isNotEmpty ? product.colors.first : '',
+      size: product.sizes.isNotEmpty ? product.sizes.first : '',
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${product.name} ajouté au panier !'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _toggleFavorite(Product product) {
+    final userId = _userId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connecte-toi pour ajouter aux favoris.')),
+      );
+      return;
+    }
+    _favoritesService.toggleFavorite(userId, product);
+  }
+
+  void _showSupportOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.smart_toy_outlined, color: Colors.orange),
+                title: const Text('Parler à Nicole'),
+                subtitle: const Text('Assistante virtuelle DavidSTORE'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.pushNamed(context, '/support-chat');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.chat, color: Colors.green),
+                title: const Text('Support WhatsApp'),
+                subtitle: const Text('Parler à un humain'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final uri = Uri.parse('https://wa.me/243852849473');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final userId = _userId;
+
+    Query productsQuery = FirebaseFirestore.instance
+        .collection('products')
+        .where('active', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .limit(4);
+
+    Query searchQuery = FirebaseFirestore.instance
+        .collection('products')
+        .where('active', isEqualTo: true);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      drawer: const AppDrawer(),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Color(0xFF475569)),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'DAVID',
+                style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5),
+              ),
+              TextSpan(
+                text: 'STORE',
+                style: TextStyle(color: Color(0xFFEA6A2E), fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 0.5),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF475569)),
+            onPressed: () => Navigator.pushNamed(context, '/cart'),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            // En-tête
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Bonjour 👋',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      Text(
-                        'Bienvenue !',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: navy,
-                        ),
-                      ),
-                    ],
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                ),
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.notifications_outlined, color: navy),
-                    ),
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: orange,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pushNamed(context, '/cart'),
-                  icon: const Icon(Icons.shopping_cart_outlined, color: navy),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Barre de recherche
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Rechercher un produit...',
-                hintStyle: const TextStyle(color: Colors.black38),
-                prefixIcon: const Icon(Icons.search, color: Colors.black38),
-                filled: true,
-                fillColor: const Color(0xFFF5F5F7),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              onSubmitted: (_) => Navigator.pushNamed(context, '/catalog'),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Bannière "Nouveautés"
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/catalog'),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: navy,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Nouveautés',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Découvrez nos nouveaux produits',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: const BoxDecoration(
-                        color: orange,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.shopping_bag_outlined,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Catégories
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Catégories',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: navy,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/catalog'),
-                  child: const Text('Voir tout', style: TextStyle(color: orange)),
-                ),
-              ],
-            ),
-
-            SizedBox(
-              height: 90,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final cat = _categories[index];
-                  return GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/catalog'),
-                    child: Column(
+                    child: Row(
                       children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF1EA),
-                            borderRadius: BorderRadius.circular(16),
+                        Icon(Icons.search, color: Colors.grey.shade400, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (value) => setState(() => _searchQuery = value),
+                            decoration: InputDecoration(
+                              hintText: 'Rechercher un produit...',
+                              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
                           ),
-                          child: Icon(cat.icon, color: orange),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          cat.label,
-                          style: const TextStyle(fontSize: 11, color: navy),
                         ),
                       ],
                     ),
-                  );
+                ),
+              ),
+            ),
+
+            SliverToBoxAdapter(
+              child: BannerCarousel(
+                onCategoryTap: (categoryName) => Navigator.pushNamed(context, '/category', arguments: categoryName),
+                onProductTap: (productId) async {
+                  final doc = await FirebaseFirestore.instance.collection('products').doc(productId).get();
+                  if (!doc.exists || !context.mounted) return;
+                  final data = doc.data()!;
+                  data['id'] = doc.id;
+                  final product = Product.fromMap(data);
+                  Navigator.pushNamed(context, '/product', arguments: product);
                 },
               ),
             ),
 
-            const SizedBox(height: 12),
-
-            // Meilleures ventes
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Meilleures ventes',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: navy,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/catalog'),
-                  child: const Text('Voir tout', style: TextStyle(color: orange)),
-                ),
-              ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                child: Text('Catégories', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+              ),
             ),
 
-            const SizedBox(height: 8),
-
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _bestSellers.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 0.78,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _categories.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemBuilder: (context, index) {
+                    final cat = _categories[index];
+                    return HomeCategoryCard(
+                      label: cat['label'] as String,
+                      imagePath: cat['image'] as String,
+                      onTap: () {
+                        if (cat['label'] == 'Plus') {
+                          Navigator.pushNamed(context, '/catalog');
+                        } else {
+                          Navigator.pushNamed(context, '/catalog', arguments: cat['label']);
+                        }
+                      },
+                    );
+                  },
+                ),
               ),
-              itemBuilder: (context, index) {
-                final product = _bestSellers[index];
-                return GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/product'),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9F9FB),
-                      borderRadius: BorderRadius.circular(16),
+            ),
+
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(_searchQuery.isEmpty ? 'Nouveaux produits' : 'Résultats de recherche', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/catalog'),
+                      child: Text('Voir plus', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.primaryColor)),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Icon(product.icon, size: 56, color: navy),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          product.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: navy,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          product.price,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: orange,
-                          ),
-                        ),
-                      ],
+                  ],
+                ),
+              ),
+            ),
+
+            StreamBuilder<QuerySnapshot>(
+              stream: (_searchQuery.isEmpty ? productsQuery : searchQuery).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SliverToBoxAdapter(
+                    child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: CircularProgressIndicator())),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return const SliverToBoxAdapter(
+                    child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Impossible de charger les produits.'))),
+                  );
+                }
+
+                final docs = snapshot.data?.docs ?? [];
+                final products = docs.map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  data['id'] = doc.id;
+                  return Product.fromMap(data);
+                }).where((p) => p.active && (_searchQuery.isEmpty || p.name.toLowerCase().contains(_searchQuery.toLowerCase()))).toList();
+
+                if (products.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('Aucun produit pour le moment.'))),
+                  );
+                }
+
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.68,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final product = products[index];
+                        return userId == null
+                            ? ProductCard(
+                                product: product,
+                                isFavorite: false,
+                                onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
+                                onFavoriteToggle: () => _toggleFavorite(product),
+                                onAddToCart: () => _addToCart(product),
+                              )
+                            : StreamBuilder<bool>(
+                                stream: _favoritesService.isFavorite(userId, product.id),
+                                builder: (context, favSnapshot) {
+                                  return ProductCard(
+                                    product: product,
+                                    isFavorite: favSnapshot.data ?? false,
+                                    onTap: () => Navigator.pushNamed(context, '/product', arguments: product),
+                                    onFavoriteToggle: () => _toggleFavorite(product),
+                                    onAddToCart: () => _addToCart(product),
+                                  );
+                                },
+                              );
+                      },
+                      childCount: products.length,
                     ),
                   ),
                 );
               },
             ),
 
-            const SizedBox(height: 20),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentNavIndex,
-        onTap: _onNavTap,
-        selectedItemColor: orange,
-        unselectedItemColor: Colors.black38,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_outlined),
-            activeIcon: Icon(Icons.grid_view),
-            label: 'Catégories',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined),
-            activeIcon: Icon(Icons.shopping_cart),
-            label: 'Panier',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profil',
-          ),
-        ],
-      ),
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 0),
     );
   }
 }

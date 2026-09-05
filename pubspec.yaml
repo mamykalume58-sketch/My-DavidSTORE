@@ -2,7 +2,7 @@ name: davidstore
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+17
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
@@ -10,6 +10,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  device_info_plus: ^10.1.0
+  package_info_plus: ^8.0.0
+  open_filex: ^4.5.0
+  permission_handler: ^11.3.1
+  path_provider: ^2.1.4
 
   cupertino_icons: ^1.0.8
 
@@ -17,7 +22,18 @@ dependencies:
 
   firebase_core: ^4.12.1
   firebase_auth: ^6.5.6
+  firebase_messaging: ^16.5.0
+  flutter_local_notifications: ^21.0.0
   google_sign_in: ^7.0.0
+  http: ^1.6.0
+  image_picker: ^1.1.2
+  cloud_firestore: ^6.8.0
+  url_launcher: ^6.3.1
+  intl: ^0.19.0
+  geolocator: ^14.0.2
+  mobile_scanner: ^7.2.0
+  geocoding: ^5.0.0
+  app_links: ^6.3.4
 
 dev_dependencies:
   flutter_test:
@@ -33,10 +49,11 @@ flutter:
   assets:
     - assets/images/
     - assets/images/onboarding/
+    - assets/images/categories/
 
 flutter_launcher_icons:
   android: true
   ios: false
   image_path: "assets/images/icon.png"
-  adaptive_icon_background: "#0A1030"
+  adaptive_icon_background: "#3D4FE0"
   adaptive_icon_foreground: "assets/images/icon.png"

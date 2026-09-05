@@ -1,12 +1,50 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'home_screen.dart';
+import '../utils/price_formatter.dart';
+import 'home/home_screen.dart';
 
 class ConfirmationScreen extends StatelessWidget {
   const ConfirmationScreen({super.key});
 
+  Map<String, dynamic> _stateFor(String status) {
+    switch (status) {
+      case 'completed':
+      case 'success':
+        return {
+          'color': Colors.green,
+          'icon': Icons.check,
+          'title': 'Paiement confirmé',
+          'message': 'Votre commande a été enregistrée avec succès.',
+          'showDeliveryNote': true,
+        };
+      case 'failed':
+      case 'cancelled':
+        return {
+          'color': Colors.red,
+          'icon': Icons.close,
+          'title': 'Le paiement a échoué',
+          'message': 'Le paiement n\'a pas pu être finalisé.\nVous pouvez réessayer depuis vos commandes.',
+          'showDeliveryNote': false,
+        };
+      default:
+        return {
+          'color': Colors.orange,
+          'icon': Icons.access_time,
+          'title': 'Paiement en cours de vérification',
+          'message': 'Nous vérifions votre paiement.\nVous serez notifié dès confirmation.',
+          'showDeliveryNote': false,
+        };
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final orderId = args?['orderId'] as String?;
+    final fallbackAmount = (args?['amount'] as num?)?.toInt() ?? 0;
+    final fallbackStatus = args?['status']?.toString() ?? 'pending';
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -23,93 +61,153 @@ class ConfirmationScreen extends StatelessWidget {
         children: [
           _buildStepper(3),
           Expanded(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            child: orderId == null
+                ? _buildBody(
+                    context,
+                    status: fallbackStatus,
+                    amount: fallbackAmount,
+                    orderNumber: null,
+                  )
+                : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance.collection('orders').doc(orderId).snapshots(),
+                    builder: (context, snapshot) {
+                      final data = snapshot.data?.data();
+                      final status = data?['paymentStatus']?.toString() ?? fallbackStatus;
+                      final amount = (data?['total'] as num?)?.toInt() ?? fallbackAmount;
+                      final orderNumber = data?['orderNumber']?.toString();
+
+                      return _buildBody(
+                        context,
+                        status: status,
+                        amount: amount,
+                        orderNumber: orderNumber,
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context, {
+    required String status,
+    required int amount,
+    required String? orderNumber,
+  }) {
+    final state = _stateFor(status);
+    final isSuccess = status == 'completed' || status == 'success';
+    final isFailed = status == 'failed' || status == 'cancelled';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: state['color'] as Color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(state['icon'] as IconData,
+                  color: Colors.white, size: 48),
+            ),
+            const SizedBox(height: 24),
+            Text(state['title'] as String,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textDark)),
+            const SizedBox(height: 8),
+            Text(
+              state['message'] as String,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 14, color: AppColors.textGrey),
+            ),
+            if (state['showDeliveryNote'] == true) ...[
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
                   children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
+                    const Icon(Icons.local_shipping_outlined, color: Colors.green, size: 22),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Un livreur vous contactera prochainement pour la livraison.',
+                        style: TextStyle(fontSize: 13, color: AppColors.textDark),
                       ),
-                      child: const Icon(Icons.check,
-                          color: Colors.white, size: 48),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text('Commande confirmée !',
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textDark)),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Merci pour votre achat.\nVotre commande a été enregistrée avec succès.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 14, color: AppColors.textGrey),
-                    ),
-                    const SizedBox(height: 32),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF7F7F7),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          _infoRow('Numéro de commande',
-                              '#OS2024051800001'),
-                          const SizedBox(height: 12),
-                          _infoRow('Total payé', '335.000 FC',
-                              valueColor: AppColors.orangeDark),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.orangeDark,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text('Voir mes commandes',
-                            style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const HomeScreen()),
-                          (route) => false,
-                        );
-                      },
-                      child: const Text('Retour à l\'accueil',
-                          style: TextStyle(
-                              color: AppColors.orangeDark,
-                              fontSize: 14)),
                     ),
                   ],
                 ),
               ),
+            ],
+            if (orderNumber != null) ...[
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F7F7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    _infoRow('Numéro de commande', orderNumber),
+                    const SizedBox(height: 8),
+                    _infoRow('Total', formatPrice(amount), valueColor: AppColors.orangeDark),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (isFailed) {
+                    Navigator.pushNamedAndRemoveUntil(context, '/tracking', (route) => false);
+                  } else if (isSuccess) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      (route) => false,
+                    );
+                  } else {
+                    Navigator.pushNamedAndRemoveUntil(context, '/tracking', (route) => false);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isSuccess ? Colors.green : AppColors.orangeDark,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  isSuccess
+                      ? 'CONTINUER MES ACHATS'
+                      : (isFailed ? 'Réessayer' : 'Voir mes commandes'),
+                  style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

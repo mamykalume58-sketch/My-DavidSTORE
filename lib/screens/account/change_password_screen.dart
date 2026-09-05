@@ -1,0 +1,133 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
+
+  @override
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final _currentController = TextEditingController();
+  final _newController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _isLoading = false;
+  String? _error;
+
+  bool _showCurrent = false;
+  bool _showNew = false;
+  bool _showConfirm = false;
+
+  Future<void> _submit() async {
+    if (_newController.text != _confirmController.text) {
+      setState(() => _error = 'Les mots de passe ne correspondent pas.');
+      return;
+    }
+    if (_newController.text.length < 6) {
+      setState(() => _error = 'Le nouveau mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final email = user?.email;
+      if (user == null || email == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+      final credential = EmailAuthProvider.credential(email: email, password: _currentController.text);
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(_newController.text);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mot de passe mis à jour avec succès.')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      setState(() => _error = "Impossible de modifier le mot de passe. Vérifie ton mot de passe actuel.");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _passwordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: !obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        suffixIcon: IconButton(
+          icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+          onPressed: onToggle,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: const Text('Modifier le mot de passe', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 16)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+            ),
+          _passwordField(
+            controller: _currentController,
+            label: 'Mot de passe actuel',
+            obscure: _showCurrent,
+            onToggle: () => setState(() => _showCurrent = !_showCurrent),
+          ),
+          const SizedBox(height: 12),
+          _passwordField(
+            controller: _newController,
+            label: 'Nouveau mot de passe',
+            obscure: _showNew,
+            onToggle: () => setState(() => _showNew = !_showNew),
+          ),
+          const SizedBox(height: 12),
+          _passwordField(
+            controller: _confirmController,
+            label: 'Confirmer le nouveau mot de passe',
+            obscure: _showConfirm,
+            onToggle: () => setState(() => _showConfirm = !_showConfirm),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _submit,
+              child: _isLoading
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Mettre à jour'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId}/{subcollection=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null &&
+        (request.auth.uid == userId || request.auth.token.admin == true);
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /orders/{orderId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.driverId ||
+        request.auth.token.admin == true
+      );
+
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId &&
+        (!('paymentStatus' in request.resource.data) || request.resource.data.paymentStatus == 'pending');
+
+
+      // Admin : peut tout modifier
+      allow update: if request.auth != null && request.auth.token.admin == true;
+
+      // Client proprietaire : peut UNIQUEMENT confirmer la reception (scan QR),
+      // et seulement si le paiement est deja confirme
+      allow update: if request.auth != null &&
+        request.auth.uid == resource.data.userId &&
+        resource.data.paymentStatus == 'completed' &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status']) &&
+        request.resource.data.status == 'delivered';
+
+      // Livreur assigne : peut UNIQUEMENT passer la commande en "out_for_delivery"
+      // et/ou definir le code de verification
+      allow update: if request.auth != null &&
+        request.auth.uid == resource.data.driverId &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'verificationCode', 'acceptedByDriver', 'deliveredAt']) &&
+        (!('status' in request.resource.data.diff(resource.data).affectedKeys()) ||
+          request.resource.data.status == 'out_for_delivery');
+    }
+
+    match /livreurs/{livreurId} {
+      allow read, write: if request.auth != null &&
+        (request.auth.uid == livreurId || request.auth.token.admin == true);
+    }
+
+    match /notifications/{notificationId} {
+      // Le livreur ne peut lire/supprimer que ses propres notifications.
+      allow read, delete: if request.auth != null &&
+        request.auth.uid == resource.data.driverId;
+
+      // Seul l'admin (dashboard) peut creer des notifications.
+      allow create: if request.auth != null && request.auth.token.admin == true;
+
+      // Pas de modification (pas de statut "lu" pour l'instant).
+      allow update: if false;
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+  }
+}

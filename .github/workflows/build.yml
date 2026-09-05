@@ -2,8 +2,11 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, redesign-ui ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -27,11 +30,57 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Extraire la version depuis pubspec.yaml
+        id: version
+        run: |
+          VERSION_LINE=$(grep '^version:' pubspec.yaml)
+          VERSION_NAME=$(echo "$VERSION_LINE" | sed 's/version: *//' | cut -d'+' -f1 | tr -d '[:space:]')
+          VERSION_CODE=$(echo "$VERSION_LINE" | sed 's/version: *//' | cut -d'+' -f2 | tr -d '[:space:]')
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          ABI_VERSION_CODE=$((2000 + VERSION_CODE))
+          echo "abi_code=$ABI_VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Générer les icônes de l'application
+        run: dart run flutter_launcher_icons
+
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --split-per-abi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: davidstore-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+
+      - name: Créer la GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.name }}+${{ steps.version.outputs.code }}
+          name: DavidSTORE v${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }})
+          files: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+
+      - name: Calculer taille et URL de téléchargement
+        id: meta
+        run: |
+          SIZE=$(stat -c%s build/app/outputs/flutter-apk/app-arm64-v8a-release.apk)
+          URL="https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.name }}+${{ steps.version.outputs.code }}/app-arm64-v8a-release.apk"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Mettre à jour la version dans Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.abi_code }}
+          DOWNLOAD_URL: ${{ steps.meta.outputs.url }}
+          FILE_SIZE: ${{ steps.meta.outputs.size }}
+        run: |
+          npm install firebase-admin
+          echo "$FIREBASE_SERVICE_ACCOUNT_BASE64" | base64 -d > /tmp/sa.json
+          node scripts/update-version.js

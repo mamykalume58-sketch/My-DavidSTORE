@@ -1,9 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'device_service.dart';
+import 'notification_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final DeviceService _deviceService = DeviceService();
+  final NotificationService _notificationService = NotificationService();
 
   bool _googleSignInInitialized = false;
 
@@ -13,7 +19,10 @@ class AuthService {
 
   Future<void> _ensureGoogleSignInInitialized() async {
     if (!_googleSignInInitialized) {
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(
+        serverClientId:
+            '27947559228-36j1vtt3pinki041dtpfar6oiptlfhlm.apps.googleusercontent.com',
+      );
       _googleSignInInitialized = true;
     }
   }
@@ -24,10 +33,32 @@ class AuthService {
     required String password,
   }) async {
     try {
-      return await _firebaseAuth.createUserWithEmailAndPassword(
+      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      try {
+        await http.post(
+          Uri.parse(
+              'https://davidstore-payment.vercel.app/api/auth/send-verification'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email}),
+        );
+      } catch (_) {
+        // Ne bloque jamais l'inscription si l'envoi de verification echoue
+      }
+      await _deviceService.registerCurrentDevice();
+      await _notificationService.registerFcmToken();
+      try {
+        await http.post(
+          Uri.parse('https://davidstore-payment.vercel.app/api/auth/welcome'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email}),
+        );
+      } catch (_) {
+        // Ne bloque jamais l'inscription si l'email de bienvenue echoue
+      }
+      return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -39,10 +70,13 @@ class AuthService {
     required String password,
   }) async {
     try {
-      return await _firebaseAuth.signInWithEmailAndPassword(
+      final credential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      await _deviceService.registerCurrentDevice();
+      await _notificationService.registerFcmToken();
+      return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -61,7 +95,11 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      return await _firebaseAuth.signInWithCredential(credential);
+      final userCredential =
+          await _firebaseAuth.signInWithCredential(credential);
+      await _deviceService.registerCurrentDevice();
+      await _notificationService.registerFcmToken();
+      return userCredential;
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return null; // l'utilisateur a annulé la connexion
@@ -75,9 +113,17 @@ class AuthService {
   // Mot de passe oublié
   Future<void> resetPassword(String email) async {
     try {
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+      final response = await http.post(
+        Uri.parse(
+            'https://davidstore-payment.vercel.app/api/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+      if (response.statusCode != 200) {
+        throw 'Impossible d\'envoyer l\'email de réinitialisation. Réessayez plus tard.';
+      }
+    } on http.ClientException {
+      throw 'Vérifiez votre connexion internet et réessayez.';
     }
   }
 
