@@ -48,12 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (info != null && mounted) {
         showUpdateDialog(context, info: info);
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('DEBUG maj: $e'), duration: const Duration(seconds: 10)),
-        );
-      }
+    } catch (_) {
+      // Ne bloque jamais l'app si la vérification de mise à jour echoue
     }
   }
 
