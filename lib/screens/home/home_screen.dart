@@ -43,9 +43,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkForUpdate() async {
-    final info = await VersionService().checkForUpdate();
-    if (info != null && mounted) {
-      showUpdateDialog(context, info: info);
+    try {
+      final info = await VersionService().checkForUpdate();
+      if (info != null && mounted) {
+        showUpdateDialog(context, info: info);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('DEBUG maj: $e'), duration: const Duration(seconds: 10)),
+        );
+      }
     }
   }
 
