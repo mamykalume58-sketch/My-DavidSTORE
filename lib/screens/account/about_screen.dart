@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 const String _fallbackAboutContent =
     "DAVIDSTORE est votre boutique en ligne de confiance, proposant une large sélection de produits avec paiement via Airtel Money, M-Pesa et Orange Money, et une livraison rapide.";
@@ -32,7 +33,15 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 const Text('DAVIDSTORE', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
                 const SizedBox(height: 4),
-                const Text('Version 1.0.0', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    final label = snapshot.hasData
+                        ? 'Version ${snapshot.data!.version} (${snapshot.data!.buildNumber})'
+                        : 'Version...';
+                    return Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)));
+                  },
+                ),
               ],
             ),
           ),
