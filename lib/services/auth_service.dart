@@ -39,7 +39,8 @@ class AuthService {
       );
       try {
         await http.post(
-          Uri.parse('https://davidstore-payment.vercel.app/api/auth/send-verification'),
+          Uri.parse(
+              'https://davidstore-payment.vercel.app/api/auth/send-verification'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'email': email}),
         );
@@ -94,7 +95,8 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final userCredential =
+          await _firebaseAuth.signInWithCredential(credential);
       await _deviceService.registerCurrentDevice();
       await _notificationService.registerFcmToken();
       return userCredential;
@@ -111,9 +113,17 @@ class AuthService {
   // Mot de passe oublié
   Future<void> resetPassword(String email) async {
     try {
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+      final response = await http.post(
+        Uri.parse(
+            'https://davidstore-payment.vercel.app/api/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+      if (response.statusCode != 200) {
+        throw 'Impossible d\'envoyer l\'email de réinitialisation. Réessayez plus tard.';
+      }
+    } on http.ClientException {
+      throw 'Vérifiez votre connexion internet et réessayez.';
     }
   }
 

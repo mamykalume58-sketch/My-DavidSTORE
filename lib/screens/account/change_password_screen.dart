@@ -15,6 +15,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _isLoading = false;
   String? _error;
 
+  bool _showCurrent = false;
+  bool _showNew = false;
+  bool _showConfirm = false;
+
   Future<void> _submit() async {
     if (_newController.text != _confirmController.text) {
       setState(() => _error = 'Les mots de passe ne correspondent pas.');
@@ -53,6 +57,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
   }
 
+  Widget _passwordField({
+    required TextEditingController controller,
+    required String label,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: !obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        suffixIcon: IconButton(
+          icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+          onPressed: onToggle,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,37 +96,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
             ),
-          TextField(
+          _passwordField(
             controller: _currentController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Mot de passe actuel',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            label: 'Mot de passe actuel',
+            obscure: _showCurrent,
+            onToggle: () => setState(() => _showCurrent = !_showCurrent),
           ),
           const SizedBox(height: 12),
-          TextField(
+          _passwordField(
             controller: _newController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Nouveau mot de passe',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            label: 'Nouveau mot de passe',
+            obscure: _showNew,
+            onToggle: () => setState(() => _showNew = !_showNew),
           ),
           const SizedBox(height: 12),
-          TextField(
+          _passwordField(
             controller: _confirmController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Confirmer le nouveau mot de passe',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            label: 'Confirmer le nouveau mot de passe',
+            obscure: _showConfirm,
+            onToggle: () => setState(() => _showConfirm = !_showConfirm),
           ),
           const SizedBox(height: 20),
           SizedBox(

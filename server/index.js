@@ -9,6 +9,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { sendTransactionalEmail } = require('./emails/emailService');
 const { parseUserAgent } = require('./emails/parseUserAgent');
+const crypto = require('crypto');
 
 const Sentry = require('@sentry/node');
 Sentry.init({
@@ -738,17 +739,60 @@ app.post('/api/auth/forgot-password', paymentLimiter, async (req, res) => {
       console.error('Erreur geolocalisation IP:', geoError);
     }
 
-    const actionCodeSettings = {
-      url: 'https://davidstore-757d8.firebaseapp.com',
-      handleCodeInApp: false,
-    };
-    const resetLink = await getAuth().generatePasswordResetLink(email, actionCodeSettings);
+    const userRecord = await getAuth().getUserByEmail(email);
+    const token = crypto.randomBytes(32).toString('hex');
+    await db.collection('passwordResets').doc(token).set({
+      uid: userRecord.uid,
+      email,
+      used: false,
+      createdAt: FieldValue.serverTimestamp(),
+      expiresAt: Date.now() + 30 * 60 * 1000,
+    });
+
+    const resetLink = `https://davidstore-payment.vercel.app/reset-password?token=${token}`;
     const when = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Kinshasa' }) + ' (heure de Kinshasa)';
     await sendTransactionalEmail({ type: 'PASSWORD_RESET', to: email, data: { resetLink, device, location, when } });
 
     res.json({ success: true });
   } catch (error) {
     console.error('Erreur /api/auth/forgot-password:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de la reinitialisation du mot de passe' });
+  }
+});
+
+app.get('/reset-password', (req, res) => {
+  res.sendFile(__dirname + '/public/reset-password.html');
+});
+
+app.post('/api/auth/reset-password', paymentLimiter, async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'token et newPassword sont requis' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caracteres' });
+    }
+
+    const resetDoc = await db.collection('passwordResets').doc(token).get();
+    if (!resetDoc.exists) {
+      return res.status(400).json({ error: 'Lien invalide ou deja utilise' });
+    }
+    const resetData = resetDoc.data();
+    if (resetData.used) {
+      return res.status(400).json({ error: 'Ce lien a deja ete utilise' });
+    }
+    if (Date.now() > resetData.expiresAt) {
+      return res.status(400).json({ error: 'Ce lien a expire, demandez-en un nouveau' });
+    }
+
+    await getAuth().updateUser(resetData.uid, { password: newPassword });
+    await db.collection('passwordResets').doc(token).update({ used: true });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/auth/reset-password:', error);
     Sentry.captureException(error);
     res.status(500).json({ error: 'Erreur serveur lors de la reinitialisation du mot de passe' });
   }

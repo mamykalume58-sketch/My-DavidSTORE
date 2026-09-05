@@ -11,7 +11,7 @@ function passwordResetEmail({ resetLink, device, location, when }) {
       infoRow('Quand', when, { last: true })
     )}
     ${button('Réinitialiser mon mot de passe', resetLink)}
-    ${securityNote("Ce lien est valable pendant une durée limitée. Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.")}
+    ${securityNote("Ce lien est valable pendant 30 minutes. Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.")}
   `;
   return wrapEmail({ title: 'Réinitialisation de votre mot de passe DavidSTORE', bodyHtml: body });
 }
