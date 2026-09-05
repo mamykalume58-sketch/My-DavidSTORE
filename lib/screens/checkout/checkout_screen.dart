@@ -142,6 +142,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }).timeout(const Duration(seconds: 15));
 
       try {
+        for (final item in cartItems) {
+          final productId = item['productId'] as String?;
+          final qty = (item['quantity'] as num?)?.toInt() ?? 0;
+          if (productId == null || productId.isEmpty || qty <= 0) continue;
+          final productRef = db.collection('products').doc(productId);
+          await db.runTransaction((tx) async {
+            final snap = await tx.get(productRef);
+            if (!snap.exists) return;
+            final currentStock = (snap.data()?['stock'] as num?)?.toInt() ?? 0;
+            final newStock = currentStock - qty;
+            final clampedStock = newStock < 0 ? 0 : newStock;
+            final update = <String, dynamic>{'stock': clampedStock};
+            if (clampedStock <= 0) update['active'] = false;
+            tx.update(productRef, update);
+          });
+        }
+      } catch (_) {
+        // Ne bloque jamais la commande si la mise a jour du stock echoue
+      }
+
+      try {
         final idToken = await FirebaseAuth.instance.currentUser?.getIdToken();
         await http.post(
           Uri.parse('https://davidstore-payment.vercel.app/api/orders/notify-received'),
@@ -162,6 +183,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
       } catch (_) {
         // Ne bloque jamais la commande si l'email echoue
+      }
+
+      try {
+        await _cartService.clearCart(userId);
+      } catch (_) {
+        // Ne bloque jamais la commande si le nettoyage du panier echoue
       }
 
       if (!mounted) return;

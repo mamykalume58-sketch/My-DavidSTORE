@@ -197,7 +197,7 @@ class _ProductScreenState extends State<ProductScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 240,
+                  height: MediaQuery.of(context).size.height * 0.5,
                   width: double.infinity,
                   color: const Color(0xFFF5F5F7),
                   child: product.images.isNotEmpty
