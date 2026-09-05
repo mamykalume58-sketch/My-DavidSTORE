@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,7 +6,7 @@ import '../../widgets/custom_bottom_nav_bar.dart';
 import '../../services/favorites_service.dart';
 import '../../services/address_service.dart';
 import '../../services/coupon_service.dart';
-import '../../services/coupon_service.dart';
+import '../../services/user_profile_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -42,10 +43,25 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Colors.white,
-                      child: Text(initiale, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.primaryColor)),
+                    StreamBuilder<Map<String, dynamic>?>(
+                      stream: UserProfileService().watchUserProfile(),
+                      builder: (context, snapshot) {
+                        final photoUrl = snapshot.data?['photoUrl'] as String?;
+                        ImageProvider? avatarImage;
+                        if (photoUrl != null && photoUrl.startsWith('data:image')) {
+                          try {
+                            avatarImage = MemoryImage(base64Decode(photoUrl.split(',').last));
+                          } catch (_) {}
+                        }
+                        return CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Colors.white,
+                          backgroundImage: avatarImage,
+                          child: avatarImage == null
+                              ? Text(initiale, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.primaryColor))
+                              : null,
+                        );
+                      },
                     ),
                     const SizedBox(width: 14),
                     Expanded(

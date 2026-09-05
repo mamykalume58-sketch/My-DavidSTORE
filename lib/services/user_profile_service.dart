@@ -18,12 +18,14 @@ class UserProfileService {
     String? phone,
     DateTime? birthDate,
     String? gender,
+    String? photoUrl,
   }) async {
     if (_userId == null) return;
     final data = <String, dynamic>{};
     if (phone != null) data['phone'] = phone;
     if (birthDate != null) data['birthDate'] = Timestamp.fromDate(birthDate);
     if (gender != null) data['gender'] = gender;
+    if (photoUrl != null) data['photoUrl'] = photoUrl;
     await _doc.set(data, SetOptions(merge: true));
   }
 }

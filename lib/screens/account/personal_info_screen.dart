@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/user_profile_service.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
@@ -13,6 +15,42 @@ class PersonalInfoScreen extends StatefulWidget {
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _profileService = UserProfileService();
+  bool _uploadingPhoto = false;
+
+  Future<void> _pickPhoto() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      imageQuality: 70,
+    );
+    if (picked == null) return;
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final b64 = base64Encode(bytes);
+      await _profileService.updateUserProfile(photoUrl: 'data:image/jpeg;base64,$b64');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erreur lors de l'envoi de la photo. Réessaie.")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
+  }
+
+  ImageProvider? _avatarImage(String? photoUrl) {
+    if (photoUrl == null || !photoUrl.startsWith('data:image')) return null;
+    try {
+      final b64Str = photoUrl.split(',').last;
+      return MemoryImage(base64Decode(b64Str));
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<void> _editPhone(String current) async {
     final controller = TextEditingController(text: current == 'Non renseigné' ? '' : current);
@@ -94,6 +132,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           final birthDate = birthTs?.toDate();
           final birthLabel = birthDate != null ? DateFormat('dd/MM/yyyy').format(birthDate) : 'Non renseignée';
           final gender = data['gender'] as String? ?? 'Non renseigné';
+          final photoUrl = data['photoUrl'] as String?;
+          final avatarImage = _avatarImage(photoUrl);
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -103,11 +143,48 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 decoration: BoxDecoration(color: theme.primaryColor, borderRadius: BorderRadius.circular(16)),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 26,
-                      backgroundColor: Colors.white,
-                      child: Text(initiale,
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.primaryColor)),
+                    GestureDetector(
+                      onTap: _uploadingPhoto ? null : _pickPhoto,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          CircleAvatar(
+                            radius: 26,
+                            backgroundColor: Colors.white,
+                            backgroundImage: avatarImage,
+                            child: avatarImage == null
+                                ? Text(initiale,
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.primaryColor))
+                                : null,
+                          ),
+                          if (_uploadingPhoto)
+                            Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.4), shape: BoxShape.circle),
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          Positioned(
+                            bottom: -2,
+                            right: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: theme.primaryColor, width: 1.5),
+                              ),
+                              child: Icon(Icons.camera_alt, size: 12, color: theme.primaryColor),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
