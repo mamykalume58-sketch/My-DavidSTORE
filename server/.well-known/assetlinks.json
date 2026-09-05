@@ -2,7 +2,7 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.example.davidstore",
+    "package_name": "com.davidstore.davidstore_client",
     "sha256_cert_fingerprints": ["98:2F:6C:E1:7D:53:6A:AC:6D:FE:79:FE:18:BB:A0:3F:7D:8F:AC:87:3F:A2:28:37:BB:E9:50:C1:BD:96:23:76"]
   }
 }]
