@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -79,23 +80,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
       _errorMessage = null;
     });
 
-    try {
-      final response = await http.post(
-        Uri.parse('$kBackendBaseUrl/api/shwary/pay'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'orderId': orderId,
-          'amount': amount,
-          'clientPhoneNumber': fullPhoneNumber,
-          'userId': userId,
-          'paymentMethod': _methods[_selectedMethod]['name'],
-        }),
-      );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _VerifyingPaymentDialog(),
+    );
 
+    try {
+      final results = await Future.wait([
+        http.post(
+          Uri.parse('$kBackendBaseUrl/api/shwary/pay'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'orderId': orderId,
+            'amount': amount,
+            'clientPhoneNumber': fullPhoneNumber,
+            'userId': userId,
+            'paymentMethod': _methods[_selectedMethod]['name'],
+          }),
+        ),
+        Future.delayed(const Duration(milliseconds: 2600)),
+      ]);
+      final response = results[0] as http.Response;
       final data = jsonDecode(response.body);
 
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+
       if (response.statusCode == 200) {
-        if (!mounted) return;
         Navigator.pushNamed(
           context,
           '/confirmation',
@@ -112,6 +124,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         });
       }
     } catch (e) {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
       setState(() {
         _errorMessage = 'Impossible de contacter le serveur. Vérifie ta connexion.';
       });
@@ -336,6 +349,64 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VerifyingPaymentDialog extends StatefulWidget {
+  const _VerifyingPaymentDialog();
+
+  @override
+  State<_VerifyingPaymentDialog> createState() => _VerifyingPaymentDialogState();
+}
+
+class _VerifyingPaymentDialogState extends State<_VerifyingPaymentDialog> {
+  int _step = 0;
+  Timer? _timer;
+
+  static const List<String> _steps = [
+    'Envoi de la demande de paiement...',
+    "Vérification auprès de l'opérateur...",
+    'Confirmation du paiement...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 900), (_) {
+      if (mounted) setState(() => _step = (_step + 1) % _steps.length);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      child: Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: AppColors.orangeDark),
+              const SizedBox(height: 20),
+              Text(
+                _steps[_step],
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         ),
       ),
     );
