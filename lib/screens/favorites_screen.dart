@@ -8,6 +8,7 @@ import '../services/cart_service.dart';
 import '../services/favorites_service.dart';
 import '../widgets/catalog_sort_modal.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/app_snackbar.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -71,8 +72,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       color: product.colors.isNotEmpty ? product.colors.first : '',
       size: product.sizes.isNotEmpty ? product.sizes.first : '',
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product.name} ajouté au panier'), duration: const Duration(seconds: 2)),
+    AppSnackBar.success(
+      context,
+      '${product.name} ajouté au panier',
+      actionLabel: 'Voir',
+      onAction: () => Navigator.pushNamed(context, '/cart'),
     );
   }
 
