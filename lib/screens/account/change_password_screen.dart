@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../widgets/app_snackbar.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -45,9 +46,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       await user.updatePassword(_newController.text);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mot de passe mis à jour avec succès.')),
-        );
+        AppSnackBar.success(context, 'Mot de passe mis à jour avec succès.');
         Navigator.pop(context);
       }
     } catch (e) {

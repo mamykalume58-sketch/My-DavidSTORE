@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/address_service.dart';
 import '../../widgets/address_form_sheet.dart';
+import '../../widgets/app_snackbar.dart';
 
 /// Écran "Adresses de livraison" (Compte).
 /// Étape 4d : ajout suppression + définir par défaut.
@@ -47,9 +48,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
       await _addressService.setDefaultAddress(addressId);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Impossible de définir cette adresse par défaut.')),
-        );
+        AppSnackBar.error(context, 'Impossible de définir cette adresse par défaut.');
       }
     }
   }
@@ -78,9 +77,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
         await _addressService.deleteAddress(addressId);
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Impossible de supprimer cette adresse.')),
-          );
+          AppSnackBar.error(context, 'Impossible de supprimer cette adresse.');
         }
       }
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/payment_method.dart';
 import '../../services/payment_methods_service.dart';
+import '../../widgets/app_snackbar.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -101,7 +102,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       onPressed: () async {
                         final rawPhone = phoneController.text.trim();
                         if (selectedProvider == null || rawPhone.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Choisis un opérateur et entre ton numéro.')));
+                          AppSnackBar.info(context, 'Choisis un opérateur et entre ton numéro.');
                           return;
                         }
                         await _service.addPaymentMethod(

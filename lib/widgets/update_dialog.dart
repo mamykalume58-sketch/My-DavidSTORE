@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/update_download_service.dart';
 import '../services/version_service.dart';
+import 'app_snackbar.dart';
 
 /// Affiche le bottom sheet de mise à jour (style Telegram) et gère le
 /// téléchargement + installation directement depuis l'app.
@@ -42,9 +43,7 @@ class _UpdateSheetState extends State<_UpdateSheet> {
       await _downloadService.installApk(file);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec du téléchargement : $e')),
-      );
+      AppSnackBar.error(context, 'Échec du téléchargement : $e');
       setState(() => _downloading = false);
     }
   }

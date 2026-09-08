@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../widgets/app_snackbar.dart';
 
 class SecurityScreen extends StatefulWidget {
   const SecurityScreen({super.key});
@@ -45,9 +46,7 @@ class _SecurityScreenState extends State<SecurityScreen> with WidgetsBindingObse
   Future<void> _resendVerification() async {
     final now = DateTime.now();
     if (_lastVerificationSent != null && now.difference(_lastVerificationSent!).inSeconds < 60) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Merci de patienter avant de renvoyer un nouvel email.')),
-      );
+      AppSnackBar.info(context, 'Merci de patienter avant de renvoyer un nouvel email.');
       return;
     }
 
@@ -62,16 +61,12 @@ class _SecurityScreenState extends State<SecurityScreen> with WidgetsBindingObse
         );
         _lastVerificationSent = now;
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email de verification envoye.')),
-          );
+          AppSnackBar.success(context, 'Email de vérification envoyé.');
         }
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors de l\'envoi. Reessaie plus tard.')),
-        );
+        AppSnackBar.error(context, "Erreur lors de l'envoi. Réessaie plus tard.");
       }
     } finally {
       if (mounted) setState(() => _sendingVerification = false);
