@@ -7,6 +7,7 @@ import '../../models/order.dart';
 import '../../utils/price_formatter.dart';
 import 'confirm_delivery_screen.dart';
 import '../../services/driver_tracking_service.dart';
+import '../../widgets/app_snackbar.dart';
 
 String _paymentStatusLabel(String status) {
   switch (status) {
@@ -487,9 +488,7 @@ class OrderTrackingScreen extends StatelessWidget {
                                             );
                                             if (confirmed == true) {
                                               // ignore: use_build_context_synchronously
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Livraison confirmée !')),
-                                              );
+                                              AppSnackBar.success(context, 'Livraison confirmée');
                                             }
                                           },
                                           icon: const Icon(Icons.qr_code_scanner),

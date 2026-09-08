@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/user_profile_service.dart';
+import '../../widgets/app_snackbar.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
@@ -33,8 +34,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       await _profileService.updateUserProfile(photoUrl: 'data:image/jpeg;base64,$b64');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Erreur lors de l'envoi de la photo. Réessaie.")),
+        AppSnackBar.errorFromException(
+          context,
+          e,
+          fallback: "Erreur lors de l'envoi de la photo. Réessaie.",
         );
       }
     } finally {

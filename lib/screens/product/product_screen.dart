@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/product.dart';
 import '../../services/cart_service.dart';
 import '../../services/favorites_service.dart';
+import '../../widgets/app_snackbar.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({super.key});
@@ -131,9 +132,7 @@ class _ProductScreenState extends State<ProductScreen> {
   Future<void> _addToCart(Product product) async {
     final userId = _userId;
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Connecte-toi pour ajouter au panier')),
-      );
+      AppSnackBar.info(context, 'Connecte-toi pour ajouter au panier');
       return;
     }
 
@@ -147,14 +146,15 @@ class _ProductScreenState extends State<ProductScreen> {
         quantity: _quantity,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit ajouté au panier')),
+      AppSnackBar.success(
+        context,
+        'Produit ajouté au panier',
+        actionLabel: 'Voir',
+        onAction: () => Navigator.pushNamed(context, '/cart'),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e')),
-      );
+      AppSnackBar.errorFromException(context, e);
     } finally {
       if (mounted) setState(() => _isAddingToCart = false);
     }
@@ -169,9 +169,7 @@ class _ProductScreenState extends State<ProductScreen> {
   Future<void> _toggleFavorite(Product product) async {
     final userId = _userId;
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Connecte-toi pour ajouter aux favoris')),
-      );
+      AppSnackBar.info(context, 'Connecte-toi pour ajouter aux favoris');
       return;
     }
     await _favoritesService.toggleFavorite(userId, product);
