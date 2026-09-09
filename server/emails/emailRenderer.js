@@ -43,6 +43,12 @@ function securityNote(text) {
   return `<p style="font-size:12px;color:${COLORS.textMuted};line-height:1.6;margin:0;">${escapeHtml(text)}</p>`;
 }
 
+function codeBlock(code) {
+  return `<div style="background:${COLORS.cardBgSecondary};border-radius:10px;padding:20px;margin-bottom:20px;text-align:center;">
+    <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:${COLORS.navy};font-family:monospace;">${escapeHtml(code)}</span>
+  </div>`;
+}
+
 function progressSteps(steps, currentIndex) {
   const items = steps.map((label, i) => {
     const active = i === currentIndex;
@@ -57,4 +63,4 @@ function progressSteps(steps, currentIndex) {
   return `<div style="display:flex;justify-content:space-between;margin-bottom:20px;">${items}</div>`;
 }
 
-module.exports = { escapeHtml, title, paragraph, infoRow, infoCard, button, securityNote, progressSteps };
+module.exports = { escapeHtml, title, paragraph, infoRow, infoCard, button, securityNote, progressSteps, codeBlock };

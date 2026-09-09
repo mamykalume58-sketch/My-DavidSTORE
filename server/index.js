@@ -62,6 +62,22 @@ const paymentLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const passwordResetPinLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Trop de tentatives, reessayez dans quelques minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+function generateResetPin() {
+  return crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+}
+
+function hashResetPin(pin) {
+  return crypto.createHash('sha256').update(pin).digest('hex');
+}
+
 async function sendPushNotification(userId, title, body, data) {
   try {
     const userDoc = await db.collection('users').doc(userId).get();
@@ -817,6 +833,121 @@ app.post('/api/auth/send-verification', paymentLimiter, async (req, res) => {
     console.error('Erreur /api/auth/send-verification:', error);
     Sentry.captureException(error);
     res.status(500).json({ error: 'Erreur serveur lors de l\'envoi de la verification' });
+  }
+});
+
+app.post('/api/auth/forgot-password-pin', passwordResetPinLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'email est requis' });
+    }
+
+    try {
+      const userRecord = await getAuth().getUserByEmail(email);
+      const pin = generateResetPin();
+      const requestRef = db.collection('passwordResetPins').doc();
+      await requestRef.set({
+        uid: userRecord.uid,
+        email,
+        pinHash: hashResetPin(pin),
+        attempts: 0,
+        verified: false,
+        used: false,
+        createdAt: FieldValue.serverTimestamp(),
+        expiresAt: Date.now() + 10 * 60 * 1000,
+      });
+      await sendTransactionalEmail({ type: 'PASSWORD_RESET_PIN', to: email, data: { pin } });
+      return res.json({ success: true, requestId: requestRef.id });
+    } catch (lookupError) {
+      return res.json({ success: true, requestId: crypto.randomBytes(16).toString('hex') });
+    }
+  } catch (error) {
+    console.error('Erreur /api/auth/forgot-password-pin:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de l\'envoi du code' });
+  }
+});
+
+app.post('/api/auth/verify-reset-pin', passwordResetPinLimiter, async (req, res) => {
+  try {
+    const { requestId, pin } = req.body;
+    if (!requestId || !pin) {
+      return res.status(400).json({ error: 'requestId et pin sont requis' });
+    }
+
+    const requestRef = db.collection('passwordResetPins').doc(requestId);
+    const requestDoc = await requestRef.get();
+    if (!requestDoc.exists) {
+      return res.status(400).json({ error: 'Code incorrect. Verifiez le code recu par e-mail.' });
+    }
+    const data = requestDoc.data();
+
+    if (data.used) {
+      return res.status(400).json({ error: 'Ce code a deja ete utilise.' });
+    }
+    if (Date.now() > data.expiresAt) {
+      return res.status(400).json({ error: 'Ce code a expire, demandez un nouveau code.' });
+    }
+    if (data.attempts >= 5) {
+      return res.status(400).json({ error: 'Trop de tentatives. Demandez un nouveau code.' });
+    }
+
+    if (hashResetPin(pin) !== data.pinHash) {
+      await requestRef.update({ attempts: FieldValue.increment(1) });
+      return res.status(400).json({ error: 'Code incorrect. Verifiez le code recu par e-mail.' });
+    }
+
+    const authToken = crypto.randomBytes(32).toString('hex');
+    await requestRef.update({
+      verified: true,
+      authToken,
+      authTokenExpiresAt: Date.now() + 10 * 60 * 1000,
+    });
+
+    res.json({ success: true, resetToken: authToken });
+  } catch (error) {
+    console.error('Erreur /api/auth/verify-reset-pin:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de la verification du code' });
+  }
+});
+
+app.post('/api/auth/reset-password-pin', passwordResetPinLimiter, async (req, res) => {
+  try {
+    const { requestId, resetToken, newPassword } = req.body;
+    if (!requestId || !resetToken || !newPassword) {
+      return res.status(400).json({ error: 'requestId, resetToken et newPassword sont requis' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caracteres' });
+    }
+
+    const requestRef = db.collection('passwordResetPins').doc(requestId);
+    const requestDoc = await requestRef.get();
+    if (!requestDoc.exists) {
+      return res.status(400).json({ error: 'Demande invalide.' });
+    }
+    const data = requestDoc.data();
+
+    if (data.used) {
+      return res.status(400).json({ error: 'Ce code a deja ete utilise.' });
+    }
+    if (!data.verified || data.authToken !== resetToken) {
+      return res.status(400).json({ error: 'Autorisation invalide.' });
+    }
+    if (Date.now() > data.authTokenExpiresAt) {
+      return res.status(400).json({ error: 'Cette autorisation a expire, recommencez.' });
+    }
+
+    await getAuth().updateUser(data.uid, { password: newPassword });
+    await requestRef.update({ used: true });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Erreur /api/auth/reset-password-pin:', error);
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Erreur serveur lors de la reinitialisation du mot de passe' });
   }
 });
 

@@ -2,6 +2,7 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { sendEmail } = require('./brevoClient');
 const { welcomeEmail } = require('./templates/welcomeEmail');
 const { passwordResetEmail } = require('./templates/passwordResetEmail');
+const { passwordResetPinEmail } = require('./templates/passwordResetPinEmail');
 const { emailVerificationEmail } = require('./templates/emailVerificationEmail');
 const { orderReceivedEmail } = require('./templates/orderReceivedEmail');
 const { paymentConfirmedEmail } = require('./templates/paymentConfirmedEmail');
@@ -16,6 +17,7 @@ const { paymentFailedEmail } = require('./templates/paymentFailedEmail');
 const TEMPLATES = {
   WELCOME: { render: welcomeEmail, subject: 'Bienvenue sur DavidSTORE' },
   PASSWORD_RESET: { render: passwordResetEmail, subject: 'Réinitialisation de votre mot de passe DavidSTORE' },
+  PASSWORD_RESET_PIN: { render: passwordResetPinEmail, subject: 'Votre code de vérification DavidSTORE' },
   EMAIL_VERIFICATION: { render: emailVerificationEmail, subject: 'Confirmez votre adresse email DavidSTORE' },
   ORDER_RECEIVED: { render: orderReceivedEmail, subject: (d) => `Votre commande DavidSTORE #${d.orderNumber} a été reçue` },
   PAYMENT_CONFIRMED: { render: paymentConfirmedEmail, subject: (d) => `Paiement confirmé — Commande #${d.orderNumber}` },
