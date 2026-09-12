@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "27947559228-fj86d2l0gfuon6eosohtm6k0abp07mf6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.davidstore.davidstore_client",
+            "certificate_hash": "d48d53801ddab2d2acff50b6d9ce16c74acc169f"
+          }
+        },
+        {
           "client_id": "27947559228-36j1vtt3pinki041dtpfar6oiptlfhlm.apps.googleusercontent.com",
           "client_type": 3
         }
