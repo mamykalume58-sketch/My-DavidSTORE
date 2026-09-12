@@ -31,7 +31,6 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
   bool _isLocating = false;
   bool _isSaving = false;
   String? _locationError;
-  bool _geoAutoFillSuccess = false;
   String? _validationError;
 
   final TextEditingController _labelController = TextEditingController();
@@ -212,7 +211,6 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
   Future<void> _useMyLocation() async {
     setState(() {
       _isLocating = true;
-      _geoAutoFillSuccess = false;
       _locationError = null;
     });
 
@@ -309,7 +307,6 @@ class _AddressFormSheetState extends State<AddressFormSheet> {
           if (mounted) {
             setState(() {
               if (matchedProvince != null) _selectedProvince = matchedProvince;
-              if (matchedProvince != null) _geoAutoFillSuccess = true;
               if (matchedCity != null) _selectedCity = matchedCity;
               if (matchedCommune != null) _selectedCommune = matchedCommune;
               if (_quartierController.text.isEmpty && quartierUsable) {

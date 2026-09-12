@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/cart/cart_screen.dart';
 import '../screens/catalog/catalog_screen.dart';
@@ -46,6 +47,7 @@ class AppRoutes {
     '/onboarding': (context) => const OnboardingScreen(),
     '/login': (context) => const LoginScreen(),
     '/register': (context) => const RegisterScreen(),
+    '/forgot-password': (context) => const ForgotPasswordScreen(),
     '/home': (context) => const HomeScreen(),
     '/catalog': (context) => const CatalogScreen(),
     '/cart': (context) => CartScreen(),

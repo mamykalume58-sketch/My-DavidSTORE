@@ -127,6 +127,67 @@ class AuthService {
     }
   }
 
+  // Demande d'un code PIN de reinitialisation (nouveau flux)
+  Future<String> requestResetPin(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://davidstore-payment.vercel.app/api/auth/forgot-password-pin'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        throw data['error'] ?? 'Impossible d\'envoyer le code. Réessayez plus tard.';
+      }
+      return data['requestId'] as String;
+    } on http.ClientException {
+      throw 'Vérifiez votre connexion internet et réessayez.';
+    }
+  }
+
+  // Verification du PIN recu par email
+  Future<String> verifyResetPin(String requestId, String pin) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://davidstore-payment.vercel.app/api/auth/verify-reset-pin'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'requestId': requestId, 'pin': pin}),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        throw data['error'] ?? 'Code incorrect.';
+      }
+      return data['resetToken'] as String;
+    } on http.ClientException {
+      throw 'Vérifiez votre connexion internet et réessayez.';
+    }
+  }
+
+  // Application du nouveau mot de passe apres verification du PIN
+  Future<void> resetPasswordWithPin(
+      String requestId, String resetToken, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://davidstore-payment.vercel.app/api/auth/reset-password-pin'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'requestId': requestId,
+          'resetToken': resetToken,
+          'newPassword': newPassword,
+        }),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        throw data['error'] ?? 'Impossible de réinitialiser le mot de passe.';
+      }
+    } on http.ClientException {
+      throw 'Vérifiez votre connexion internet et réessayez.';
+    }
+  }
+
   // Déconnexion
   Future<void> signOut() async {
     await _firebaseAuth.signOut();

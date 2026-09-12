@@ -6,6 +6,10 @@ import 'config/routes.dart';
 import 'config/theme.dart';
 import 'screens/category_screen.dart';
 import 'screens/tracking/order_tracking_screen.dart';
+import 'screens/auth/email_sent_screen.dart';
+import 'screens/auth/verify_pin_screen.dart';
+import 'screens/auth/new_password_screen.dart';
+import 'screens/auth/password_reset_success_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -44,33 +48,43 @@ class DavidStoreApp extends StatelessWidget {
           );
         }
 
-        return null;
-      },
-    );
-  }
-}
-
-class _AuthGate extends StatelessWidget {
-  const _AuthGate();
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
+        if (settings.name == '/email-sent') {
+          final args = settings.arguments as Map?;
+          return MaterialPageRoute(
+            builder: (_) => EmailSentScreen(
+              email: args?['email']?.toString() ?? '',
+              requestId: args?['requestId']?.toString() ?? '',
             ),
           );
         }
 
-        if (snapshot.hasData) {
-          return AppRoutes.routes['/']!(context);
+        if (settings.name == '/verify-pin') {
+          final args = settings.arguments as Map?;
+          return MaterialPageRoute(
+            builder: (_) => VerifyPinScreen(
+              email: args?['email']?.toString() ?? '',
+              requestId: args?['requestId']?.toString() ?? '',
+            ),
+          );
         }
 
-        return AppRoutes.routes['/login']!(context);
+        if (settings.name == '/new-password') {
+          final args = settings.arguments as Map?;
+          return MaterialPageRoute(
+            builder: (_) => NewPasswordScreen(
+              requestId: args?['requestId']?.toString() ?? '',
+              resetToken: args?['resetToken']?.toString() ?? '',
+            ),
+          );
+        }
+
+        if (settings.name == '/password-reset-success') {
+          return MaterialPageRoute(
+            builder: (_) => const PasswordResetSuccessScreen(),
+          );
+        }
+
+        return null;
       },
     );
   }

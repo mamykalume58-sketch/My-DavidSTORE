@@ -83,46 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _favoritesService.toggleFavorite(userId, product);
   }
 
-  void _showSupportOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(Icons.smart_toy_outlined, color: Colors.orange),
-                title: const Text('Parler à Nicole'),
-                subtitle: const Text('Assistante virtuelle DavidSTORE'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.pushNamed(context, '/support-chat');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.chat, color: Colors.green),
-                title: const Text('Support WhatsApp'),
-                subtitle: const Text('Parler à un humain'),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  final uri = Uri.parse('https://wa.me/243852849473');
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
