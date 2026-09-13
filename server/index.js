@@ -710,6 +710,46 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
       { type: 'new_product', productId: productId || '' }
     );
 
+    try {
+      const counterRef = db.collection('counters').doc('newProductsSinceLastEmail');
+      const counterDoc = await counterRef.get();
+      const currentCount = (counterDoc.exists ? counterDoc.data().count : 0) || 0;
+      const newCount = currentCount + 1;
+
+      if (newCount >= 5) {
+        const productsSnapshot = await db.collection('products')
+          .where('active', '==', true)
+          .orderBy('createdAt', 'desc')
+          .limit(5)
+          .get();
+        const products = productsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        const usersSnapshot = await db.collection('users').get();
+        const emails = usersSnapshot.docs
+          .map((d) => d.data().email)
+          .filter((email) => Boolean(email));
+
+        for (const email of emails) {
+          try {
+            await sendTransactionalEmail({
+              type: 'NEW_PRODUCTS',
+              to: email,
+              data: { products, count: newCount },
+            });
+          } catch (emailError) {
+            console.error(`Erreur envoi email NEW_PRODUCTS a ${email}:`, emailError);
+          }
+        }
+
+        await counterRef.set({ count: 0 });
+      } else {
+        await counterRef.set({ count: newCount });
+      }
+    } catch (batchEmailError) {
+      console.error('Erreur logique email groupe nouveaux produits:', batchEmailError);
+      Sentry.captureException(batchEmailError);
+    }
+
     res.json(result);
   } catch (error) {
     console.error('Erreur /api/notify-new-product:', error);
@@ -717,7 +757,6 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de l\'envoi de la notification' });
   }
 });
-
 app.post('/api/auth/welcome', paymentLimiter, async (req, res) => {
   try {
     const { email, name } = req.body;

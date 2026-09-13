@@ -63,4 +63,30 @@ function progressSteps(steps, currentIndex) {
   return `<div style="display:flex;justify-content:space-between;margin-bottom:20px;">${items}</div>`;
 }
 
-module.exports = { escapeHtml, title, paragraph, infoRow, infoCard, button, securityNote, progressSteps, codeBlock };
+function productGrid(products) {
+  const cards = products.map((p) => {
+    const image = p.images && p.images[0] ? p.images[0] : '';
+    const hasPromo = p.promoPrice != null && p.promoPrice < p.price;
+    const priceHtml = hasPromo
+      ? `<span style="font-size:13px;color:${COLORS.textMuted};text-decoration:line-through;margin-right:6px;">${p.price} FC</span><span style="font-size:14px;color:${COLORS.gold};font-weight:700;">${p.promoPrice} FC</span>`
+      : `<span style="font-size:14px;color:${COLORS.gold};font-weight:700;">${p.price} FC</span>`;
+    return `<td width="50%" style="padding:6px;vertical-align:top;">
+      <div style="background:${COLORS.cardBgSecondary};border-radius:10px;overflow:hidden;">
+        <img src="${escapeHtml(image)}" alt="${escapeHtml(p.name)}" style="width:100%;height:140px;object-fit:cover;display:block;" />
+        <div style="padding:10px 12px;">
+          <p style="font-size:12.5px;color:${COLORS.textPrimary};margin:0 0 6px;font-weight:600;line-height:1.3;">${escapeHtml(p.name)}</p>
+          ${priceHtml}
+        </div>
+      </div>
+    </td>`;
+  });
+
+  const rows = [];
+  for (let i = 0; i < cards.length; i += 2) {
+    rows.push(`<tr>${cards[i]}${cards[i + 1] || '<td width="50%"></td>'}</tr>`);
+  }
+
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;"><tbody>${rows.join('')}</tbody></table>`;
+}
+
+module.exports = { escapeHtml, title, paragraph, infoRow, infoCard, button, securityNote, progressSteps, codeBlock, productGrid };

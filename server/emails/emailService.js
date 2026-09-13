@@ -13,6 +13,7 @@ const { orderShippedEmail } = require('./templates/orderShippedEmail');
 const { driverNearbyEmail } = require('./templates/driverNearbyEmail');
 const { orderCancelledEmail } = require('./templates/orderCancelledEmail');
 const { paymentFailedEmail } = require('./templates/paymentFailedEmail');
+const { newProductsEmail } = require('./templates/newProductsEmail');
 
 const TEMPLATES = {
   WELCOME: { render: welcomeEmail, subject: 'Bienvenue sur DavidSTORE' },
@@ -28,6 +29,7 @@ const TEMPLATES = {
   DRIVER_NEARBY: { render: driverNearbyEmail, subject: (d) => `Votre livreur arrive — Commande #${d.orderNumber}` },
   ORDER_CANCELLED: { render: orderCancelledEmail, subject: (d) => `Commande #${d.orderNumber} annulée` },
   PAYMENT_FAILED: { render: paymentFailedEmail, subject: (d) => `Échec du paiement — Commande #${d.orderNumber}` },
+  NEW_PRODUCTS: { render: newProductsEmail, subject: (d) => `${d.count} nouveaux produits sur DavidSTORE 🎉` },
 };
 
 async function logEmailAttempt({ type, recipient, status, error, relatedUserId, relatedOrderId }) {
