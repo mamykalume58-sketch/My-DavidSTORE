@@ -121,7 +121,6 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
         focusNode: _focusNodes[index],
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
-        maxLength: 1,
         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.navyDark),
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: InputDecoration(
@@ -142,19 +141,39 @@ class _VerifyPinScreenState extends State<VerifyPinScreen> {
             borderSide: const BorderSide(color: AppColors.orangeDark, width: 1.5),
           ),
         ),
-        onChanged: (value) {
-          if (value.isNotEmpty && index < 5) {
-            _focusNodes[index + 1].requestFocus();
-          } else if (value.isEmpty && index > 0) {
-            _focusNodes[index - 1].requestFocus();
-          }
-          if (index == 5 && value.isNotEmpty) {
-            FocusScope.of(context).unfocus();
-          }
-          setState(() {});
-        },
+        onChanged: (value) => _onDigitChanged(index, value),
       ),
     );
+  }
+
+  void _onDigitChanged(int index, String value) {
+    if (value.length > 1) {
+      final digits = value.split('');
+      for (var i = 0; i < digits.length && (index + i) < 6; i++) {
+        _controllers[index + i].text = digits[i];
+      }
+      final lastFilled = (index + digits.length - 1).clamp(0, 5);
+      if (lastFilled < 5) {
+        _focusNodes[lastFilled + 1].requestFocus();
+      } else {
+        FocusScope.of(context).unfocus();
+      }
+    } else {
+      if (value.isNotEmpty && index < 5) {
+        _focusNodes[index + 1].requestFocus();
+      } else if (value.isEmpty && index > 0) {
+        _focusNodes[index - 1].requestFocus();
+      }
+      if (index == 5 && value.isNotEmpty) {
+        FocusScope.of(context).unfocus();
+      }
+    }
+
+    setState(() {});
+
+    if (_pin.length == 6 && !_loading) {
+      _verify();
+    }
   }
 
   @override
