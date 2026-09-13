@@ -44,3 +44,20 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 lib/firebase_options.dart
+serviceAccountKey.json
+node_modules/
+.env
+scripts/serviceAccountKey.json
+.vercel
+.env*
+.git-credentials-flutter
+*.bak
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/
+
+# Generated Flutter desktop files (linux/macos not used, kept auto-generated only)
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugins.cmake
+linux/flutter/ephemeral/
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Flutter/ephemeral/

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_snackbar.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -78,9 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez accepter les conditions')),
-      );
+      AppSnackBar.info(context, 'Veuillez accepter les conditions');
       return;
     }
 
@@ -93,16 +92,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (!mounted) return;
+
       Navigator.pushReplacementNamed(context, '/home');
+
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        AppSnackBar.errorFromException(context, e);
       }
     }
 
-    if (mounted) setState(() => _loading = false);
+    if (mounted) {
+      setState(() => _loading = false);
+    }
   }
 
   Future<void> _googleRegister() async {
@@ -116,9 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        AppSnackBar.errorFromException(context, e);
       }
     }
 

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
-import 'register_screen.dart';
+import 'auth/register_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
   Future<void> _signOut(BuildContext context) async {
-    await GoogleSignIn.instance.signOut();
-    await FirebaseAuth.instance.signOut();
+    await AuthService().signOut();
     if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
