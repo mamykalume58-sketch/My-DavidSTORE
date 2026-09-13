@@ -84,12 +84,10 @@ class AppSnackBar {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        behavior: SnackBarBehavior.floating,
+        behavior: SnackBarBehavior.fixed,
         backgroundColor: Colors.white,
         elevation: 4,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         content: Row(
           children: [
             Icon(icon, color: color, size: 20),

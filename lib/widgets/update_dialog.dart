@@ -140,7 +140,10 @@ class _UpdateSheetState extends State<_UpdateSheet> {
             if (!widget.info.forceUpdate && !_downloading) ...[
               const SizedBox(height: 10),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () async {
+                  await VersionService().snoozeUpdate(widget.info.latestVersionCode);
+                  if (context.mounted) Navigator.of(context).pop();
+                },
                 child: const Text('Me le rappeler plus tard',
                     style: TextStyle(color: accentColor)),
               ),

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Infos de mise à jour lues depuis Firestore (app_versions/{packageName}),
 /// alimenté automatiquement par le workflow GitHub Actions à chaque build.
@@ -50,6 +51,26 @@ class VersionService {
     final info = UpdateInfo.fromDoc(doc);
     if (info.latestVersionCode <= currentVersionCode) return null;
 
+    final prefs = await SharedPreferences.getInstance();
+    final snoozedVersionCode = prefs.getInt('update_snoozed_version_code');
+    final snoozedUntilMillis = prefs.getInt('update_snoozed_until');
+
+    if (snoozedVersionCode == info.latestVersionCode &&
+        snoozedUntilMillis != null &&
+        DateTime.now().millisecondsSinceEpoch < snoozedUntilMillis) {
+      return null;
+    }
+
     return info;
+  }
+
+  /// Enregistre un rappel de 24h pour une version donnée : le prompt de
+  /// mise à jour ne réapparaîtra pas avant ce délai, sauf si une version
+  /// plus récente sort entre-temps.
+  Future<void> snoozeUpdate(int versionCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    final until = DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch;
+    await prefs.setInt('update_snoozed_version_code', versionCode);
+    await prefs.setInt('update_snoozed_until', until);
   }
 }

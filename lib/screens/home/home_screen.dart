@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/product.dart';
 import '../../services/cart_service.dart';
@@ -22,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime? _lastBackPress;
   String _searchQuery = '';
   final CartService _cartService = CartService();
   final FavoritesService _favoritesService = FavoritesService();
@@ -83,6 +85,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _favoritesService.toggleFavorite(userId, product);
   }
 
+  Future<bool> _onBackPressed() async {
+    final now = DateTime.now();
+    if (_lastBackPress == null || now.difference(_lastBackPress!) > const Duration(seconds: 2)) {
+      _lastBackPress = now;
+      if (mounted) {
+        AppSnackBar.info(context, 'Appuyez à nouveau pour quitter');
+      }
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -98,7 +112,16 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('products')
         .where('active', isEqualTo: true);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _onBackPressed();
+        if (shouldPop && context.mounted) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
       drawer: const AppDrawer(),
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -307,6 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 0),
+      ),
     );
   }
 }
