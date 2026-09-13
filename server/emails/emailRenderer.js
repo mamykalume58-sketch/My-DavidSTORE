@@ -65,7 +65,9 @@ function progressSteps(steps, currentIndex) {
 
 function productGrid(products) {
   const cards = products.map((p) => {
-    const image = p.images && p.images[0] ? p.images[0] : '';
+    const rawImage = p.images && p.images[0] ? p.images[0] : '';
+    const isBase64 = rawImage && !rawImage.startsWith('http') && !rawImage.startsWith('data:');
+    const image = isBase64 ? `data:image/jpeg;base64,${rawImage}` : rawImage;
     const hasPromo = p.promoPrice != null && p.promoPrice < p.price;
     const priceHtml = hasPromo
       ? `<span style="font-size:13px;color:${COLORS.textMuted};text-decoration:line-through;margin-right:6px;">${p.price} FC</span><span style="font-size:14px;color:${COLORS.gold};font-weight:700;">${p.promoPrice} FC</span>`

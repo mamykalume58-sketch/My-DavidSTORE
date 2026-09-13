@@ -8,6 +8,7 @@ const { getMessaging } = require('firebase-admin/messaging');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const { sendTransactionalEmail } = require('./emails/emailService');
+const { uploadToCloudinary } = require('./emails/cloudinaryUpload');
 const { parseUserAgent } = require('./emails/parseUserAgent');
 const crypto = require('crypto');
 
@@ -715,6 +716,7 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
       const counterDoc = await counterRef.get();
       const currentCount = (counterDoc.exists ? counterDoc.data().count : 0) || 0;
       const newCount = currentCount + 1;
+      console.log('[NEW_PRODUCTS] compteur actuel:', newCount);
 
       if (newCount >= 5) {
         const productsSnapshot = await db.collection('products')
@@ -723,11 +725,23 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
           .limit(5)
           .get();
         const products = productsSnapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        for (const product of products) {
+          try {
+            if (product.images && product.images[0] && !product.images[0].startsWith('http')) {
+              product.images[0] = await uploadToCloudinary(product.images[0], "products");
+            }
+          } catch (uploadError) {
+            console.error(`Erreur upload Cloudinary pour produit ${product.id}:`, uploadError.message);
+            product.images = [];
+          }
+        }
+        console.log('[NEW_PRODUCTS] produits recuperes:', products.length);
 
-        const usersSnapshot = await db.collection('users').get();
-        const emails = usersSnapshot.docs
-          .map((d) => d.data().email)
+        const listUsersResult = await getAuth().listUsers(1000);
+        const emails = listUsersResult.users
+          .map((u) => u.email)
           .filter((email) => Boolean(email));
+        console.log('[NEW_PRODUCTS] emails destinataires:', emails.length, emails);
 
         for (const email of emails) {
           try {
@@ -736,6 +750,7 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
               to: email,
               data: { products, count: newCount },
             });
+            console.log('[NEW_PRODUCTS] envoye a', email);
           } catch (emailError) {
             console.error(`Erreur envoi email NEW_PRODUCTS a ${email}:`, emailError);
           }
@@ -746,7 +761,7 @@ app.post('/api/notify-new-product', requireAuth, async (req, res) => {
         await counterRef.set({ count: newCount });
       }
     } catch (batchEmailError) {
-      console.error('Erreur logique email groupe nouveaux produits:', batchEmailError);
+      console.error('Erreur logique email groupe nouveaux produits:', batchEmailError.message, batchEmailError.stack);
       Sentry.captureException(batchEmailError);
     }
 
